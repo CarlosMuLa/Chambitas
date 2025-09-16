@@ -3,25 +3,28 @@ import { H2, Text, Button, Paragraph, Image } from 'tamagui';
 
 
 
-export function Offer() {
+export function Offer({title, timeStamp, imageUrl}: {title:string, timeStamp:number, imageUrl:string}) {
     return (
-        <Card>
+        <Card animation={"bouncy"} hoverStyle={{ scale: 1.02 }} pressStyle={{ scale: 0.98 }} width={300} margin={10} borderRadius={12} overflow="hidden" elevation="$8">
             <Card.Header padded>
-                <H2>Arreglar Fugas de Agua</H2>
-                <Paragraph>Publicado hace 2 horas</Paragraph>
+                <H2>{title}</H2>
+                <Paragraph>Publicado hace {timeStamp} horas</Paragraph>
             </Card.Header>
             <Card.Footer padded>
-                <Button>Chambear</Button>
+                <Button hoverStyle={{ scale: 1.02 }} pressStyle={{ scale: 0.98 }}>Chambear</Button>
             </Card.Footer>
             <Card.Background>
                 <Image
                     objectFit="contain"
-                    alignSelf="center"
                     source=
                     {{ 
                         width:300,
                         height:300,
-                        uri: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
+                        uri: imageUrl,
+                    }}
+                    style=
+                    {{ 
+                        width: '100%', height: 200, borderRadius: 12
                     }}
                 />
             </Card.Background>
