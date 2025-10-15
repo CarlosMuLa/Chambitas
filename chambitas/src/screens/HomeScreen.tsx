@@ -3,13 +3,14 @@ import { View, Text, StyleSheet, TextInput, Animated } from "react-native";
 import { ScrollView, XStack } from "tamagui";
 import { Search } from "@tamagui/lucide-icons";
 import {Offer} from "../components/Offer";
+import SearchBar from "../components/SearchBar";
 import { useAnimatedStyle, useSharedValue, withTiming} from "react-native-reanimated";
 
 const Home = () => {
     return (
         <View style = {{ flex:1, justifyContent: "center", backgroundColor: "#f5f5f5" }}>
+            <SearchBar />
         <Animated.View style={styles.container}>
-        <TextInput placeholder="Search" style={{ padding: 12, borderWidth: 1, borderColor: "#833636ff", borderRadius: 4, marginBottom: 16 }} />
         </Animated.View>
         <ScrollView>
         <XStack $maxMd={{ flexDirection: 'column' }}>

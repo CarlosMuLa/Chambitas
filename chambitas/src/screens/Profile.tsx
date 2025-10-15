@@ -40,7 +40,7 @@ const ProfileScreen = () => {
             <XStack
                 flexWrap="wrap"
                 gap={12}
-                $maxMd={{ flexDirection: "column", alignItems: "center" }}
+                $maxMd={{ flexDirection: "column" }}
                 style={styles.offersList}
             >
                 {offersHistory.map((offer) => (
