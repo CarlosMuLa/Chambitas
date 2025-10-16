@@ -25,7 +25,7 @@ function MainTabs() {
 
 
 const AppNavigator = () => {
-    const isLoggedIn = true; // Replace with actual authentication logic
+    const isLoggedIn = false; // Replace with actual authentication logic
 
     return (
         <NavigationContainer>
