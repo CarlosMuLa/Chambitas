@@ -7,13 +7,15 @@ import { LinearGradient } from "@tamagui/linear-gradient";
 const LoginScreen = () => {
     return (
         <YStack style={styles.container} gap="$2">
-            <LinearGradient
-                colors= {['#d6ef75ff', '#3b5998']}
-                start={{ x: 0, y: 1 }}
-                end={{ x: 0, y: 0 }}
-                >
-            <H2 style={styles.title}>Bienvenido a Grinder</H2>
-            </LinearGradient>
+            <H2 
+                style={styles.title}
+                color="transparent"      // 1. Hacemos el color del texto transparente
+                backgroundClip="text"  // 2. Recortamos el fondo con la forma del texto
+                // 3. Creamos el gradiente para el fondo
+                backgroundImage="linear-gradient(to bottom, #DD0303, #FA812F)"
+            >
+                Bienvenido a Grinder
+            </H2>
             <Paragraph>Inicia sesión para continuar</Paragraph>
             <YStack>
                 <YStack >
@@ -24,7 +26,16 @@ const LoginScreen = () => {
                     <Label htmlFor="passwordInput">Contraseña</Label>
                     <Input id="passwordInput" placeholder="Ingresa tu contraseña" secureTextEntry size = "$4" width="100%"/>
                 </YStack>
-                <Button size="$4" theme="accent" mt="$4">Iniciar Sesión</Button>
+                <Button 
+                    size="$4" 
+                    mt="$4" 
+                    background="#FEF3E2" 
+                    color="#DD0303" 
+                    hoverStyle={{ background: '#FADFB2' }}
+                    pressStyle={{ background: '#FADFB2' }}
+                    borderWidth={1}
+                    borderColor="#FA812F"
+                >Iniciar Sesión</Button>
                 <Text style={{ marginTop: 20, textAlign: 'center' }}>¿No tienes una cuenta? Regístrate</Text>
             </YStack>
         </YStack>
@@ -36,10 +47,10 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#f5f5f5",
+        backgroundColor: "#FEF3E2",
     },
     title: {
-        fontSize: 24,
+        fontSize: 32,
         fontWeight: "bold",
     },
 });
