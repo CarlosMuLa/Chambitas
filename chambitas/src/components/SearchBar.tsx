@@ -41,7 +41,7 @@ export const SearchBar = () => {
         onChangeText={setSearchTerm}
       />
 
-      {isLoading && <ActivityIndicator size="large" color="#0000ff" />}
+      {isLoading && <ActivityIndicator size="large" color="#DD0303" />}
       
       {isError && <Text style={styles.error}>Error: {error.message}</Text>}
 

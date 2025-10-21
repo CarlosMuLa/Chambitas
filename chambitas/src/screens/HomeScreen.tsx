@@ -4,7 +4,6 @@ import { ScrollView, XStack } from "tamagui";
 import { Search } from "@tamagui/lucide-icons";
 import {Offer} from "../components/Offer";
 import SearchBar from "../components/SearchBar";
-import { useAnimatedStyle, useSharedValue, withTiming} from "react-native-reanimated";
 
 const Home = () => {
     return (
