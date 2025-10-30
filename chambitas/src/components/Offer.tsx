@@ -1,4 +1,4 @@
-import {Card, CardBackground } from 'tamagui';
+import {Card } from 'tamagui';
 import { H2, Text, Button, Paragraph, Image } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackScreenProps } from '../navigation/types';
