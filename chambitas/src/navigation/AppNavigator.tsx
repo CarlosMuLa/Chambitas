@@ -9,6 +9,7 @@ import Home from "../screens/HomeScreen";
 import ProfileScreen from "../screens/Profile";
 import LoginScreen from "../screens/LoginScreen";
 import OfferDetails from "../screens/OfferDetails";
+import Chats from "../screens/Chats";
 
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -23,6 +24,7 @@ const linking: LinkingOptions<RootStackParamList> = {
                 screens: {
                     Home: 'home', // -> /home
                     Profile: 'profile', // -> /profile
+                    Chats: 'chats', // -> /chats
                 },
             },
             OfferDetails: 'offer/:title', // -> /offer/algun-titulo
@@ -37,7 +39,9 @@ function MainTabs() {
             screenOptions={{ headerShown: false }} // HIDE THE HEADER FOR ALL TABS
         >
              <Tab.Screen name="Home" component={Home} />
+             <Tab.Screen name="Chats" component={Chats} />
             <Tab.Screen name="Profile" component={ProfileScreen} />
+            
         </Tab.Navigator>
     );  
 }

@@ -4,6 +4,7 @@ export type RootStackParamList = {
     Home: undefined;
     Main: undefined;
     Login: undefined;
+    Chats: undefined;
     OfferDetails: { title: string; timeStamp: number; imageUrl: string };
 };
 
