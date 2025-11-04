@@ -44,7 +44,7 @@ function MainTabs() {
 
 
 const AppNavigator = () => {
-    const isLoggedIn = false; // Replace with actual authentication logic
+    const isLoggedIn = true; // Replace with actual authentication logic
 
     return (
         <NavigationContainer linking={linking} documentTitle={{formatter: (options,route)=> `${options?.title ?? route?.name} - Chambitas`,}}>

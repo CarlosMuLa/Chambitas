@@ -1,27 +1,27 @@
-
 import React from 'react';
-import { Card, Avatar, Text } from 'tamagui';
+import { Card, Avatar, Text, XStack, YStack } from 'tamagui';
 
 export function ChatPreview({ name, lastMessage, timeStamp, avatarUrl }: { name: string; lastMessage: string; timeStamp: string; avatarUrl: string }) {
     return (
-        <Card width={300} height={150}>
-            <Card.Header padded>
-                <Avatar circular size = "$10" >
-                <Avatar.Image  accessibilityLabel={name} source={{ uri: avatarUrl }} />
-                <Avatar.Fallback backgroundColor="$blue10">{name.charAt(0)}</Avatar.Fallback>
+        <Card bordered p="$3" m="$2" pressStyle={{ backgroundColor: '$backgroundHover' }}>
+            <XStack >
+                <Avatar circular size="$5" padding="$2" marginRight="$3">
+                    <Avatar.Image accessibilityLabel={name} source={{ uri: avatarUrl }} />
+                    <Avatar.Fallback backgroundColor="$blue10">{name.charAt(0)}</Avatar.Fallback>
                 </Avatar>
-                <Text fontWeight="bold" fontSize={16}>
-                    {name}
-                </Text>
-                <Text fontSize={12} color="gray">
-                    {timeStamp}
-                </Text>
-            </Card.Header>
-            <Card.Footer padded>
-                <Text numberOfLines={2} ellipsizeMode="tail">
-                    {lastMessage}
-                </Text>
-            </Card.Footer>
+
+                <YStack flex={1}>
+                        <Text fontWeight="bold" fontSize={16}>
+                            {name}
+                        </Text>
+                        <Text fontSize={12} color="green">
+                            {timeStamp}
+                        </Text>
+                    <Text numberOfLines={1} ellipsizeMode="tail" color="green">
+                        {lastMessage}
+                    </Text>
+                </YStack>
+            </XStack>
         </Card>
     );
 }
