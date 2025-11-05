@@ -2,5 +2,10 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true
-  }
+  },
+  "include": [
+    "src",                // <-- 1. Todo tu código fuente
+    "App.tsx",            // <-- 2. Tu archivo principal (si está fuera de src)
+    "tamagui.config.ts"   // <-- 3. El archivo para que Tamagui funcione bien
+  ]
 }

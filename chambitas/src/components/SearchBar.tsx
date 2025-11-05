@@ -61,7 +61,9 @@ export const SearchBar = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 10 },
+  container: { 
+    padding: 10
+   },
   input: {
     height: 40,
     borderColor: 'gray',
@@ -69,6 +71,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 10,
     marginBottom: 10,
+    width: '40%',
+    position: 'relative',
+    left: '30%',
+
   },
   item: {
     padding: 15,

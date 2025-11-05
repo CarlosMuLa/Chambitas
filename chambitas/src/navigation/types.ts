@@ -6,6 +6,7 @@ export type RootStackParamList = {
     Login: undefined;
     Chats: undefined;
     OfferDetails: { title: string; timeStamp: number; imageUrl: string };
+    MakingOffer: { id: string };
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =
