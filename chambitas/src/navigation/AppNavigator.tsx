@@ -11,6 +11,7 @@ import LoginScreen from "../screens/LoginScreen";
 import OfferDetails from "../screens/OfferDetails";
 import Chats from "../screens/Chats";
 import MakingOffer from "../screens/MakingOffer";
+import CreateOffer from "../screens/CreateOffer";
 
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -30,6 +31,7 @@ const linking: LinkingOptions<RootStackParamList> = {
             },
             OfferDetails: 'offer/:title', // -> /offer/algun-titulo
             MakingOffer: 'make-offer/:id', // -> /make-offer/123
+            CreateOffer: 'create-offer', // -> /create-offer
             Login: 'login', // -> /login
         },
     },
@@ -60,6 +62,7 @@ const AppNavigator = () => {
                     <Stack.Screen name="Main" component={MainTabs} />
                     <Stack.Screen name="OfferDetails" component={OfferDetails} options={({ route }) => ({ title: route.params.title })} />
                     <Stack.Screen name="MakingOffer" component={MakingOffer} options={{ title: 'Hacer Oferta' }} />
+                    <Stack.Screen name="CreateOffer" component={CreateOffer} options={{ title: 'Crear Oferta' }} />
                     </>
                 ) : (
                     // if not logged in, show the login screen

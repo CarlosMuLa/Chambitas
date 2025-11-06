@@ -8,7 +8,7 @@ import { ScrollView, YStack } from 'tamagui';
 const Chats = () => {
     // Datos de ejemplo para las vistas previas de chat
     return (
-        <View >
+        <View style={{ backgroundColor: '#e6e3e3ff' }}>
             <ScrollView>
                 <YStack>
                     <ChatPreview
