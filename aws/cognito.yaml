@@ -1,0 +1,92 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Snippet básico de un User Pool de Cognito
+
+Resources:
+  # 1. El User Pool (Directorio de Usuarios)
+  MyUserPool:
+    Type: AWS::Cognito::UserPool
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      UserPoolName: GrinderUserPool
+      # Configura que los usuarios inicien sesión con email
+      UsernameAttributes:
+        - email
+        - phone_number
+      # Requiere y autoverifica el email en el registro
+      AutoVerifiedAttributes:
+        - email
+      Schema:
+        - Name: email
+          AttributeDataType: String
+          Mutable: false
+          Required: true
+        - Name: phone_number
+          AttributeDataType: String
+          Mutable: true
+          Required: true
+        - Name: name
+          AttributeDataType: String
+          Mutable: true
+          Required: true
+        - Name: preferred_username
+          AttributeDataType: String
+          Mutable: true
+          Required: false
+        - Name: userType
+          AttributeDataType: String
+          Mutable: true
+          Required: true
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireUppercase: true
+          RequireSymbols: false
+      
+
+  # 2. El Cliente (Tu Aplicación)
+  MyUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: mi-app-web
+      UserPoolId: !Ref MyUserPool
+      # false es para clientes públicos (apps web/móviles)
+      GenerateSecret: false
+      # Habilita el flujo de "Authorization Code Grant"
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows:
+        - code
+      # Permisos que la app puede solicitar
+      AllowedOAuthScopes:
+        - email
+        - openid
+        - profile
+      # A qué URLs puede redirigir Cognito tras el login
+      CallbackURLs:
+        - https://mi-app.com/callback
+      # A qué URLs puede redirigir tras el logout
+      LogoutURLs:
+        - https://mi-app.com/logout
+
+  # 3. El Dominio (Endpoint de la UI Alojada)
+  MyUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      UserPoolId: !Ref MyUserPool
+      # IMPORTANTE: Este prefijo debe ser único globalmente
+      Domain: Grinder-auth-login
+
+Outputs:
+  UserPoolId:
+    Description: El ID del User Pool creado
+    Value: !Ref MyUserPool
+
+  UserPoolClientId:
+    Description: El ID del Cliente de la App
+    Value: !Ref MyUserPoolClient
+
+  CognitoDomainURL:
+    Description: La URL del endpoint de la UI Alojada
+    Value: !Sub "https://${MyUserPoolDomain}.auth.${AWS::Region}.amazoncognito.com"
