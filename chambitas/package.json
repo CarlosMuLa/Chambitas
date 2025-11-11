@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/bottom-tabs": "^7.4.7",
     "@react-navigation/native": "^7.1.17",
     "@react-navigation/native-stack": "^7.3.26",
@@ -18,7 +19,7 @@
     "@tamagui/lucide-icons": "1.135.2",
     "@tamagui/portal": "1.135.2",
     "@tanstack/react-query": "^5.90.3",
-    "expo": "^54.0.13",
+    "expo": "54.0.23",
     "expo-auth-session": "~7.0.8",
     "expo-crypto": "~15.0.7",
     "expo-secure-store": "~15.0.7",

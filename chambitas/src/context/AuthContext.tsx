@@ -1,7 +1,9 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode} from 'react';
 import * as WebBrowser from 'expo-web-browser';
 import * as SecureStore from 'expo-secure-store';
 import * as AuthSession from 'expo-auth-session';
+import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthRequest, makeRedirectUri, exchangeCodeAsync, TokenResponse } from 'expo-auth-session';
 
 // Cierra la ventana del navegador automáticamente
@@ -110,5 +112,10 @@ export const useAuth = () => {
   }
   return context;
 };
+
+async function saveTokensToStorage(tokens: TokenResponse) {
+    const 
+  if (Platform.OS === 'web') {
+    await AsyncStorage.setItem('authTokens', JSON.stringify(tokens));
 
 export default AuthProvider;
