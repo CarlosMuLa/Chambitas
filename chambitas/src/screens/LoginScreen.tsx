@@ -3,8 +3,10 @@ import React from "react";
 import { View, Text, StyleSheet, TextInput} from "react-native";
 import { XStack, YStack , H2, Paragraph, Label, Input, Button} from "tamagui";
 import { LinearGradient } from "@tamagui/linear-gradient";
+import { useAuth } from "../context/AuthContext";
 
 const LoginScreen = () => {
+    const { signIn } = useAuth();
     return (
         <YStack style={styles.container} gap="$2">
             <H2 
@@ -35,6 +37,7 @@ const LoginScreen = () => {
                     pressStyle={{ background: '#FADFB2' }}
                     borderWidth={1}
                     borderColor="#FA812F"
+                    onPress={signIn}
                 >Iniciar Sesión</Button>
                 <Text style={{ marginTop: 20, textAlign: 'center' }}>¿No tienes una cuenta? Regístrate</Text>
             </YStack>

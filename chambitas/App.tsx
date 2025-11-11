@@ -4,6 +4,7 @@ import { createTamagui, PortalProvider } from 'tamagui';
 import { TamaguiConfig } from './tamagui.config';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AppNavigator from './src/navigation/AppNavigator';
+import AuthProvider from './src/context/AuthContext';
 
 const tamagui = createTamagui(TamaguiConfig);
 const queryClient = new QueryClient();
@@ -13,7 +14,9 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <TamaguiProvider config={tamagui}>
         <PortalProvider>
-          <AppNavigator />
+          <AuthProvider>
+            <AppNavigator />
+          </AuthProvider>
         </PortalProvider>
       </TamaguiProvider>
     </QueryClientProvider>

@@ -3,6 +3,7 @@ import { NavigationContainer, LinkingOptions } from '@react-navigation/native';
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { RootStackParamList } from "./types";
+import { YStack, Spinner } from "tamagui";
 
 
 import Home from "../screens/HomeScreen";
@@ -12,6 +13,7 @@ import OfferDetails from "../screens/OfferDetails";
 import Chats from "../screens/Chats";
 import MakingOffer from "../screens/MakingOffer";
 import CreateOffer from "../screens/CreateOffer";
+import { useAuth } from "../context/AuthContext";
 
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -53,11 +55,21 @@ function MainTabs() {
 
 const AppNavigator = () => {
     const isLoggedIn = true; // Replace with actual authentication logic
+    const { accessToken, isLoading } = useAuth();
+
+    if (isLoading) {
+        return (
+            <YStack style ={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Spinner size="large" />
+            </YStack>
+        );
+    }
+        
 
     return (
         <NavigationContainer linking={linking} documentTitle={{formatter: (options,route)=> `${options?.title ?? route?.name} - Chambitas`,}}>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
-                {isLoggedIn ? (
+                {accessToken ? (
                     <>
                     <Stack.Screen name="Main" component={MainTabs} />
                     <Stack.Screen name="OfferDetails" component={OfferDetails} options={({ route }) => ({ title: route.params.title })} />
