@@ -1,121 +1,123 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode} from 'react';
-import * as WebBrowser from 'expo-web-browser';
 import * as SecureStore from 'expo-secure-store';
-import * as AuthSession from 'expo-auth-session';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAuthRequest, makeRedirectUri, exchangeCodeAsync, TokenResponse } from 'expo-auth-session';
+import { 
+  CognitoIdentityProviderClient, 
+  InitiateAuthCommand, 
+  InitiateAuthCommandInput, 
+  AuthFlowType  } 
+  from "@aws-sdk/client-cognito-identity-provider";
 
-// Cierra la ventana del navegador automáticamente
-WebBrowser.maybeCompleteAuthSession();
 
 // --- REEMPLAZA ESTO CON TUS DATOS ---
-const COGNITO_DOMAIN = 'https://chambitas-app.auth.us-east-1.amazoncognito.com';
-const COGNITO_CLIENT_ID = 'fr3qa25o4fbgj51sh9h18cejc';
-// ---------------------------------
+const AWS_REGION = 'us-east-1';
+const COGNITO_CLIENT_ID = '3367gg4l912tgspqgp89eoiuhm';
 
-// Descubre automáticamente las URLs de Cognito
-const discovery = {
-  authorizationEndpoint: `${COGNITO_DOMAIN}/oauth2/authorize`,
-  tokenEndpoint: `${COGNITO_DOMAIN}/oauth2/token`,
-};
+const cognitoClient = new CognitoIdentityProviderClient({
+  region: AWS_REGION,
+});
 
-// Define la estructura del contexto
+
 interface AuthContextType {
   accessToken: string | null;
   isLoading: boolean;
-  signIn: () => void;
+  signIn: (username: string, password: string) => Promise<void>;
   signOut: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const Auth_Context = createContext<AuthContextType | undefined>(undefined);
 
-// --- El Proveedor (Provider) ---
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [tokens, setTokens] = useState<TokenResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // 1. URL de redirección (usando el proxy de Expo)
-  const redirectUri = AuthSession.makeRedirectUri();
-
-  // 2. Configura el hook de autenticación
-  const [request, response, promptAsync] = useAuthRequest(
-    {
-      clientId: COGNITO_CLIENT_ID,
-      scopes: ['openid', 'profile', 'email'],
-      redirectUri,
-    },
-    discovery
-  );
-
-  // 3. Maneja la respuesta del login
   useEffect(() => {
-    const exchangeToken = async (code: string) => {
-      try {
-        const tokenResult = await exchangeCodeAsync(
+    const loadToken = async () => {
+        try {
+          let storedTokens : string | null = null;
+          if (Platform.OS === 'web') {
+            storedTokens = await AsyncStorage.getItem('authTokens');
+          } else {
+            storedTokens = await SecureStore.getItemAsync('authTokens');
+          }
+          if (storedTokens) {
+            setAccessToken(storedTokens);
+          }
+        } catch (error) 
           {
-            clientId: COGNITO_CLIENT_ID,
-            code,
-            redirectUri,
-            extraParams: {
-              grant_type: 'authorization_code',
-            },
-          },
-          discovery
-        );
-        setTokens(tokenResult);
-        await SecureStore.setItemAsync('authTokens', JSON.stringify(tokenResult));
-      } catch (error) {
-        console.error("Error al intercambiar el código:", error);
-      }
-    };
-
-    if (response?.type === 'success') {
-      exchangeToken(response.params.code);
-    }
-  }, [response]);
-
-  // 4. Carga los tokens guardados al iniciar la app
-  useEffect(() => {
-    const loadTokens = async () => {
-      const storedTokens = await SecureStore.getItemAsync('authTokens');
-      if (storedTokens) {
-        setTokens(JSON.parse(storedTokens));
-      }
+            console.error("Error al cargar el token:", error);
+          }
       setIsLoading(false);
     };
-    loadTokens();
+    loadToken();
   }, []);
 
-  const signIn = () => {
-    promptAsync();
+
+  const signIn = async (username: string, password: string) => {
+    const authParams: InitiateAuthCommandInput = {
+      AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
+      ClientId: COGNITO_CLIENT_ID,
+      AuthParameters: {
+        USERNAME: username,
+        PASSWORD: password,
+      },
+    };
+    
+    const command = new InitiateAuthCommand(authParams);
+
+    try {
+      const response = await cognitoClient.send(command);
+      const token = response.AuthenticationResult;
+
+      if (token && token.AccessToken && token.RefreshToken) {
+        if (Platform.OS === 'web') {
+          await AsyncStorage.setItem('authTokens', token.AccessToken);
+          await AsyncStorage.setItem('refreshToken', token.RefreshToken);
+        }
+        else {
+          await SecureStore.setItemAsync('authTokens', token.AccessToken);
+          await SecureStore.setItemAsync('refreshToken', token.RefreshToken);
+        }
+        setAccessToken(token.AccessToken);
+      } else {
+        throw new Error("Tokens no recibidos");
+      }
+    } catch (error) {
+      console.error("Error al iniciar sesión:", error);
+      throw error;
+    }
   };
 
   const signOut = async () => {
-    // Aquí deberías añadir la lógica para revocar el token con Cognito si es necesario
-    await SecureStore.deleteItemAsync('authTokens');
-    setTokens(null);
+    if (Platform.OS === 'web') {
+      await AsyncStorage.removeItem('authTokens');
+      await AsyncStorage.removeItem('refreshToken');
+    } else {
+      await SecureStore.deleteItemAsync('authTokens');
+      await SecureStore.deleteItemAsync('refreshToken');
+    }
+    setAccessToken(null);
   };
 
   return (
-    <AuthContext.Provider value={{ accessToken: tokens?.accessToken || null, isLoading, signIn, signOut }}>
+    <Auth_Context.Provider value={{ accessToken, isLoading, signIn, signOut }}>
       {children}
-    </AuthContext.Provider>
+    </Auth_Context.Provider>
   );
 };
 
-// --- El Hook personalizado ---
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth debe ser usado dentro de un AuthProvider');
+  const context = useContext(Auth_Context);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
 
-async function saveTokensToStorage(tokens: TokenResponse) {
-    const 
-  if (Platform.OS === 'web') {
-    await AsyncStorage.setItem('authTokens', JSON.stringify(tokens));
+
+
+// Define la estructura del contexto
+
 
 export default AuthProvider;

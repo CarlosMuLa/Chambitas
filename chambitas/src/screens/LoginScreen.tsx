@@ -1,12 +1,30 @@
 import { X } from "@tamagui/lucide-icons";
-import React from "react";
-import { View, Text, StyleSheet, TextInput} from "react-native";
+import React, { useState } from "react";
+import { View, Text, StyleSheet, TextInput, Alert} from "react-native";
 import { XStack, YStack , H2, Paragraph, Label, Input, Button} from "tamagui";
 import { LinearGradient } from "@tamagui/linear-gradient";
 import { useAuth } from "../context/AuthContext";
 
 const LoginScreen = () => {
     const { signIn } = useAuth();
+
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
+    
+    const handleSignIn = async () => {
+        if (loading) return;
+        setLoading(true);
+        try {
+            await signIn(email, password);
+        } catch (error) {
+            console.error("Error al iniciar sesión:", error);
+            Alert.alert("Error", "Correo o contraseña incorrectos");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <YStack style={styles.container} gap="$2">
             <H2 
@@ -22,11 +40,19 @@ const LoginScreen = () => {
             <YStack>
                 <YStack >
                     <Label htmlFor="emailInput">Correo Electrónico</Label>
-                    <Input id="emailInput" placeholder="Ingresa tu correo" size = "$4" width="100%" />
+                    <Input id="emailInput" placeholder="Ingresa tu correo" size = "$4" width="100%"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    />
                 </YStack>
                 <YStack>
                     <Label htmlFor="passwordInput">Contraseña</Label>
-                    <Input id="passwordInput" placeholder="Ingresa tu contraseña" secureTextEntry size = "$4" width="100%"/>
+                    <Input id="passwordInput" placeholder="Ingresa tu contraseña" secureTextEntry size = "$4" width="100%"
+                    value={password}
+                    onChangeText={setPassword}
+                    />
                 </YStack>
                 <Button 
                     size="$4" 
@@ -37,8 +63,11 @@ const LoginScreen = () => {
                     pressStyle={{ background: '#FADFB2' }}
                     borderWidth={1}
                     borderColor="#FA812F"
-                    onPress={signIn}
-                >Iniciar Sesión</Button>
+                    onPress={handleSignIn}
+                    disabled={loading}
+                >
+                   {loading ? "Iniciando..." : "Iniciar Sesión"}
+                </Button>
                 <Text style={{ marginTop: 20, textAlign: 'center' }}>¿No tienes una cuenta? Regístrate</Text>
             </YStack>
         </YStack>
