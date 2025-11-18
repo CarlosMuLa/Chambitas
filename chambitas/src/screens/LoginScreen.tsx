@@ -1,28 +1,38 @@
 import { X } from "@tamagui/lucide-icons";
 import React, { useState } from "react";
 import { View, Text, StyleSheet, TextInput, Alert} from "react-native";
-import { XStack, YStack , H2, Paragraph, Label, Input, Button} from "tamagui";
+import { XStack, YStack , H2, Paragraph, Label, Input, Button, Spinner} from "tamagui";
 import { LinearGradient } from "@tamagui/linear-gradient";
 import { useAuth } from "../context/AuthContext";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../navigation/types";
+import { useMutation } from "@tanstack/react-query";
+import { authService } from "../api/AuthServices";
 
 const LoginScreen = () => {
-    const { signIn } = useAuth();
+    const { loginSuccess} = useAuth();
+    type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
+    const navigation = useNavigation<LoginScreenNavigationProp>();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
-    
-    const handleSignIn = async () => {
-        if (loading) return;
-        setLoading(true);
-        try {
-            await signIn(email, password);
-        } catch (error) {
+
+    const loginMutation = useMutation({
+        mutationFn: authService.signIn,
+        onSuccess: (data) => {
+            loginSuccess(data);
+        },
+        onError: (error) => {
             console.error("Error al iniciar sesión:", error);
             Alert.alert("Error", "Correo o contraseña incorrectos");
-        } finally {
-            setLoading(false);
         }
+    });
+    
+    const handleSignIn = async () => {
+        if (!email || !password) return;
+        loginMutation.mutate({ username: email, password });
     };
 
     return (
@@ -64,11 +74,21 @@ const LoginScreen = () => {
                     borderWidth={1}
                     borderColor="#FA812F"
                     onPress={handleSignIn}
-                    disabled={loading}
+                    disabled={loginMutation.isPending}
+                    icon={loginMutation.isPending ? <Spinner /> : undefined}
                 >
-                   {loading ? "Iniciando..." : "Iniciar Sesión"}
+                   {loginMutation.isPending ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                 </Button>
-                <Text style={{ marginTop: 20, textAlign: 'center' }}>¿No tienes una cuenta? Regístrate</Text>
+                <Paragraph style={{ textAlign: 'center', marginTop: 20 }}>
+                    <Text>
+                    ¿No tienes una cuenta?{' '}
+                    </Text>
+                    <Text 
+                    style={{ marginTop: 20, textAlign: 'center', color:"#DD0303" , fontWeight: "bold" }} 
+                    onPress={() => navigation.navigate('SignUp')}>
+                    Registrate
+                    </Text>
+                </Paragraph>
             </YStack>
         </YStack>
     );

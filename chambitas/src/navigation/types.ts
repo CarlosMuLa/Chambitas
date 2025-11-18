@@ -8,6 +8,8 @@ export type RootStackParamList = {
     OfferDetails: { title: string; timeStamp: number; imageUrl: string };
     MakingOffer: { id: string };
     CreateOffer: undefined;
+    SignUp: undefined;
+    ConfirmationCode: { username: string };
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =

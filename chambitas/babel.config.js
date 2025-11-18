@@ -7,7 +7,7 @@ module.exports = function (api) {
       [
         'transform-inline-environment-variables',
         {
-          include: ['TAMAGUI_TARGET'],
+          include: ['TAMAGUI_TARGET', 'EXPO_PUBLIC_COGNITO_CLIENT_ID'],
         },
       ],
       // NOTE: this is optional, you don't *need* the compiler

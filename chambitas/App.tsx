@@ -1,4 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
+import 'react-native-get-random-values';
 import { TamaguiProvider } from 'tamagui';
 import { createTamagui, PortalProvider } from 'tamagui';
 import { TamaguiConfig } from './tamagui.config';
