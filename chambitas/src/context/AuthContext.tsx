@@ -21,9 +21,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const loginSuccess = async (token: any) => {
     try {
     if (Platform.OS === 'web') {
-      await  AsyncStorage.getItem('authTokens',token);
+      await  AsyncStorage.setItem('authTokens',token);
     } else {
-      await SecureStore.getItemAsync('authTokens',token);
+      await SecureStore.setItemAsync('authTokens',token);
     }
       setAccessToken(token);
     } catch (error) {
