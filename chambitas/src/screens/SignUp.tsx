@@ -1,6 +1,6 @@
 import React, { useState} from 'react';
 import  {Platform} from 'react-native';
-import { YStack, Label, Input, Form, Avatar, Button, ScrollView, H2, Paragraph, Spinner} from 'tamagui';
+import { YStack, Label, Input, Form, Avatar, Button, ScrollView, H2, Paragraph, Spinner, Switch, XStack} from 'tamagui';
 import * as ImagePicker from 'expo-image-picker';
 import { useMutation } from '@tanstack/react-query';
 import { authService } from '../api/AuthServices';
@@ -13,8 +13,11 @@ const SignUp = () => {
     const [username, setUsername] = useState('');
     const [cellphone, setCellphone] = useState('');
     const [password, setPassword] = useState('');
+    const [address, setAddress] = useState('');
+    const [state, setState] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [imageUri, setImageUri] = useState<string | null>(null);
+
 
     const navigation = useNavigation();
     
@@ -67,7 +70,7 @@ const handleSignUp = () => {
                 <YStack style={{ alignItems: 'center',gap:"$2", marginBottom:"$4" }} >
                     <H2>Crea tu cuenta</H2>
                     <Paragraph style ={{color: "#gray10"}}>Completa tus datos para empezar</Paragraph>
-                    <Avatar circular size="$10" alignSelf="center" onPress={handleImagePick} elevation="$2">
+                    <Avatar circular size="$10" alignSelf="center" onPress={handleImagePick} elevation="$2" style= {{marginTop: "$4", backgroundColor: "gray"}}>
                         <Avatar.Image source={{ uri: imageUri || 'https://example.com/default-avatar.png' }} />
                         <Avatar.Fallback style = {{backgroundColor: "white", alignItems: 'center', justifyContent: 'center'}}>
                             <Paragraph>Subir Foto</Paragraph>
@@ -119,6 +122,37 @@ const handleSignUp = () => {
                         value={confirmPassword}
                         onChangeText={setConfirmPassword}
                         secureTextEntry
+                    />
+                </YStack>
+                <YStack>
+                    <Label>
+                            Tipo de cuenta:
+                    </Label>
+                    <XStack style={{alignItems: "center", justifyContent: "space-between", marginTop: "$4"}}>
+                        <Label>¿Eres empleador?</Label>
+                        <Switch size = "$4">
+                            <Switch.Thumb animation="quicker"/>
+                        </Switch>
+                    </XStack>
+                </YStack>
+                <YStack>
+                    <Label>
+                        Ingresa tu direccion de residencia (opcional):
+                    </Label>
+                    <Input id = "address" 
+                    placeholder="Direccion"
+                    value={address}
+                    onChangeText={setAddress}
+                    />
+                </YStack>
+                <YStack>
+                    <Label>
+                        Ingresa tu estado de la republica (opcional):
+                    </Label>
+                    <Input id = "estado" 
+                    placeholder="Estado"
+                    value={state}
+                    onChangeText={setState}
                     />
                 </YStack>
 

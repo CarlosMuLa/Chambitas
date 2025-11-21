@@ -27,8 +27,8 @@ import {
   AuthFlowType,
   ResendConfirmationCodeCommand
 } from "@aws-sdk/client-cognito-identity-provider";// O donde tengas tus consts
-const AWS_REGION = 'us-east-2';
-const COGNITO_CLIENT_ID = '';
+const AWS_REGION = process.env.PUBLIC_EXPO_AWS_REGION || '';
+const COGNITO_CLIENT_ID = process.env.PUBLIC_EXPO_COGNITO_CLIENT_ID || '';
 
 const cognitoClient = new CognitoIdentityProviderClient({ region: AWS_REGION });
 
