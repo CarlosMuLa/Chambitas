@@ -5,6 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useMutation } from '@tanstack/react-query';
 import { authService } from '../api/AuthServices';
 import { useNavigation } from '@react-navigation/native';
+import { uploadProfilePicture } from '../services/s3Service';
 
 
 
@@ -16,7 +17,9 @@ const SignUp = () => {
     const [address, setAddress] = useState('');
     const [state, setState] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [type, setType] = useState(1); // 1 para trabajador, 2 para empleador
     const [imageUri, setImageUri] = useState<string | null>(null);
+    const [isRegistering, setIsRegistering] = useState(false);
 
 
     const navigation = useNavigation();
@@ -52,8 +55,8 @@ const SignUp = () => {
         }
 };
 
-const handleSignUp = () => {
-    if(!email || !password || !cellphone) {
+const handleSignUp =  async () => {
+    if(!email || !password || !cellphone || !username || !confirmPassword || !address || !state) {
         alert('Por favor, completa todos los campos.');
         return;
     }
@@ -61,7 +64,23 @@ const handleSignUp = () => {
         alert('Las contraseñas no coinciden.');
         return false;
     }
-    signUpMutation.mutate({ username, email, password, cellphone });
+    let photoUrl = "";
+    setIsRegistering(true);
+    if (imageUri) {
+        try {
+            
+            const cleanFileName = email.replace(/[^a-zA-Z0-9]/g, "");
+                console.log("Subiendo foto...");
+                photoUrl = await uploadProfilePicture(imageUri, cleanFileName);
+                console.log("Foto subida:", photoUrl);
+        } catch (error) {
+            console.error("Error al subir la foto:", error);
+            alert("Error al subir la foto. Por favor, intenta de nuevo.");
+            setIsRegistering(false);
+            return;
+        }
+    }
+    signUpMutation.mutate({ username, email, password, cellphone, address, state, type, imageUri: photoUrl});
 
 };
     return (
@@ -130,7 +149,8 @@ const handleSignUp = () => {
                     </Label>
                     <XStack style={{alignItems: "center", justifyContent: "space-between", marginTop: "$4"}}>
                         <Label>¿Eres empleador?</Label>
-                        <Switch size = "$4">
+                        
+                        <Switch size = "$4" onCheckedChange ={(val: any) => setType(val ? 2 : 1)} checked={type === 2}>
                             <Switch.Thumb animation="quicker"/>
                         </Switch>
                     </XStack>

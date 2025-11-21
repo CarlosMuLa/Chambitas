@@ -21,15 +21,17 @@ export const uploadProfilePicture = async (uri: string, userId: string) => {
     const response = await fetch(uri);
     const blob = await response.blob();
 
+    const arrayBuffer = await new Response(blob).arrayBuffer();
+
     // 3. Definir la ruta del archivo (Key)
     // Es buena práctica ponerlas en una carpeta, ej: "profiles/"
-    const fileName = `profiles-photos/${userId}.jpg`;
+    const fileName = `profile-photos/${userId}.jpg`;
 
     // 4. Crear el comando de subida
     const command = new PutObjectCommand({
       Bucket: BUCKET_NAME,
       Key: fileName,
-      Body: blob,
+      Body: new Uint8Array(arrayBuffer),
       ContentType: "image/jpeg", // Asumiendo que es jpg
     });
 

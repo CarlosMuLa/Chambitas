@@ -8,6 +8,10 @@ interface SignUpCredentials {
     email: string;
     password: string;
     cellphone: string;
+    address?: string;
+    state?: string;
+    imageUri?: string;
+    type: number;
 }
 
 interface ConfirmCredentials {
@@ -26,7 +30,8 @@ import {
   ConfirmSignUpCommand,
   AuthFlowType,
   ResendConfirmationCodeCommand
-} from "@aws-sdk/client-cognito-identity-provider";// O donde tengas tus consts
+} from "@aws-sdk/client-cognito-identity-provider";
+
 const AWS_REGION = process.env.PUBLIC_EXPO_AWS_REGION || '';
 const COGNITO_CLIENT_ID = process.env.PUBLIC_EXPO_COGNITO_CLIENT_ID || '';
 
@@ -44,7 +49,7 @@ export const authService = {
     return response.AuthenticationResult; // Devuelve los tokens
   },
 
-  signUp: async ({ username, email, password, cellphone }: SignUpCredentials) => {
+  signUp: async ({ username, email, password, cellphone, address, state , type, imageUri }: SignUpCredentials) => {
     const cleanEmail = email.trim().toLowerCase();
     const cleanNumber = cellphone.replace(/[^0-9]/g, '');
     const formattedPhone = cleanNumber.startsWith('52') 
@@ -57,6 +62,10 @@ export const authService = {
       UserAttributes: [
         { Name: 'email', Value: cleanEmail },
         { Name: 'phone_number', Value: formattedPhone },
+        { Name: 'address', Value: address },
+        { Name: 'custom:state1', Value: state },
+        { Name: 'custom:type', Value: type.toString()},
+        {Name: 'picture', Value: imageUri || ''}
       ],
     });
     return await cognitoClient.send(command);
