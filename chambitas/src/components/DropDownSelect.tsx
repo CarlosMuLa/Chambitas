@@ -69,7 +69,7 @@ export const DropDownSelect = ({
                             </Sheet.ScrollView>
                         </Sheet.Frame>
                         <Sheet.Overlay
-                            animation="lazy"
+                            animation={"medium" as any}
                             enterStyle={{ opacity: 0 }}
                             exitStyle={{ opacity: 0 }}
                         />

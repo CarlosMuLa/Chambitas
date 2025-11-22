@@ -173,7 +173,7 @@ const handleSignUp =  async () => {
                     <XStack style={{alignItems: "center", justifyContent: "space-between", marginTop: "$4"}}>
                         <Label>¿Eres empleador?</Label>
                         <Switch size = "$4" onCheckedChange ={(val: any) => setType(val ? 2 : 1)} checked={type === 2}>
-                            <Switch.Thumb animation="quicker"/>
+                            <Switch.Thumb animation={"fast" as any} />
                         </Switch>
                     </XStack>
                 </YStack>
