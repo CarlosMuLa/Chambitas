@@ -6,20 +6,43 @@ import { useMutation } from '@tanstack/react-query';
 import { authService } from '../api/AuthServices';
 import { useNavigation } from '@react-navigation/native';
 import { uploadProfilePicture } from '../services/s3Service';
+import DropDownSelect from '../components/DropDownSelect';
+import { X } from '@tamagui/lucide-icons';
 
 
 
 const SignUp = () => {
+    const StatesList = [
+        { label: 'Ciudad de México', value: '1'},
+        {label: 'Colima', value: '2'},
+        {label: 'Puebla', value: '3'},
+        {label: 'Jalisco', value: '4'},
+        {label: 'Nuevo León', value: '5'}
+    ];
+
+    const citiesList = [
+        {label: 'Benito Juárez', value: '1'},
+        {label: 'Cuauhtémoc', value: '2'},
+        {label: 'Colima', value: '3'},
+        {label: 'Villa de Alvarez', value: '4'},
+        {label: 'Tehuacán', value: '5'},
+        {label: 'Guadalajara', value: '6'},
+        {label: 'Zapopan', value: '7'},
+        {label: 'Monterrey', value: '8'}
+    ];
     const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
     const [cellphone, setCellphone] = useState('');
     const [password, setPassword] = useState('');
     const [address, setAddress] = useState('');
-    const [state, setState] = useState('');
+    const [state, setState] = useState(StatesList[0].value);
+    const [city, setCity] = useState(citiesList[0].value);
     const [confirmPassword, setConfirmPassword] = useState('');
     const [type, setType] = useState(1); // 1 para trabajador, 2 para empleador
     const [imageUri, setImageUri] = useState<string | null>(null);
     const [isRegistering, setIsRegistering] = useState(false);
+
+    
 
 
     const navigation = useNavigation();
@@ -149,7 +172,6 @@ const handleSignUp =  async () => {
                     </Label>
                     <XStack style={{alignItems: "center", justifyContent: "space-between", marginTop: "$4"}}>
                         <Label>¿Eres empleador?</Label>
-                        
                         <Switch size = "$4" onCheckedChange ={(val: any) => setType(val ? 2 : 1)} checked={type === 2}>
                             <Switch.Thumb animation="quicker"/>
                         </Switch>
@@ -166,14 +188,24 @@ const handleSignUp =  async () => {
                     />
                 </YStack>
                 <YStack>
-                    <Label>
-                        Ingresa tu estado de la republica (opcional):
-                    </Label>
-                    <Input id = "estado" 
-                    placeholder="Estado"
-                    value={state}
-                    onChangeText={setState}
-                    />
+                    <XStack style={{ alignItems: 'center', gap:10 }} >
+                        <Label>Estado:</Label>
+                        <DropDownSelect
+                            items={StatesList}
+                            value={state}
+                            onValueChange={setState}
+                            placeholder="Selecciona un estado"
+                        />
+                    </XStack>
+                    <XStack style={{ alignItems: 'center', gap:10 , marginTop: "$4"}} >
+                        <Label>Ciudad:</Label>
+                        <DropDownSelect
+                            items={citiesList}
+                            value={city}
+                            onValueChange={setCity}
+                            placeholder="Selecciona una ciudad"
+                        />
+                    </XStack>
                 </YStack>
 
                 <Form.Trigger asChild disabled={signUpMutation.isPending}>

@@ -1,10 +1,16 @@
 import React, {useState, useMemo} from "react";
-import { ScrollView, XStack, YStack, Button, TextArea, Input, Form, Spinner, Select, Label, Sheet, Adapt, getFontSize } from "tamagui";
+import { ScrollView, XStack, YStack, Button, TextArea, Input, Form, Spinner, Label, getFontSize } from "tamagui";
+import DropDownSelect from "../components/DropDownSelect";
 import { Check, ChevronDown } from "@tamagui/lucide-icons";
 
 const CreateOffer = () => {
-    const categories = ['Fontaneria', 'Jardineria', 'Limpieza', 'Construccion', 'Electricidad'];
-    const [selectedCategory, setSelectedCategory] = useState(categories[0]);
+    const categories = [
+        { label: 'Plomeria', value: '1' },
+        { label: 'Jardineria', value: '2' },
+        { label: 'Electricista', value: '3' },
+        { label: 'Limpieza', value: '4' }
+    ];
+    const [selectedCategory, setSelectedCategory] = useState(categories[1].label);
     const [status, setStatus] = React.useState<'off' | 'submitting' | 'submitted'>('off')
      React.useEffect(() => {
     if (status === 'submitting') {
@@ -22,38 +28,13 @@ const CreateOffer = () => {
                 <XStack style={{ alignItems: 'center' }} gap="$2">
                     <Label  style={{ marginRight: 10 }}>Categorias</Label>
 
-                    <Select 
-                    id="category-select" 
-                    value={selectedCategory} 
-                    onValueChange={setSelectedCategory}
-                    defaultValue={categories[0]}
-                    >
-                        <Select.Trigger width={200} iconAfter={ChevronDown}>
-                            <Select.Value placeholder="Selecciona una categoria" />
-                        </Select.Trigger>
-                        <Adapt when="sm" platform="native">
-                            <Sheet modal dismissOnSnapToBottom>
-                                <Sheet.Frame>
-                                    <Sheet.ScrollView>
-                                        <Adapt.Contents />
-                                    </Sheet.ScrollView>
-                                </Sheet.Frame>
-                                <Sheet.Overlay />
-                            </Sheet>
-                        </Adapt>
-                            <Select.Content>
-                                <Select.Viewport>
-                                    {categories.map((category, index) => (
-                                        <Select.Item index={index} key={category} value={category}>
-                                            <Select.ItemText>{category}</Select.ItemText>
-                                            <Select.ItemIndicator marginLeft="auto">
-                                                <Check size={16} />
-                                            </Select.ItemIndicator>
-                                        </Select.Item>
-                                    ))}
-                                </Select.Viewport>
-                            </Select.Content>
-                        </Select>
+                    <DropDownSelect
+                        items={categories}
+                        value={selectedCategory}
+                        onValueChange={setSelectedCategory}
+                        placeholder="Selecciona una categoria"
+                        width={200}
+                    />
                     </XStack>
                 <Form.Trigger asChild disabled = {status!=='off'}>
                 <Button icon={status === 'submitting' ? () => <Spinner/> : undefined}>
