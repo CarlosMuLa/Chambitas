@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-get-random-values';
-import { TamaguiProvider } from 'tamagui';
-import { createTamagui, PortalProvider } from 'tamagui';
+import { TamaguiProvider,createTamagui } from 'tamagui';
+import {  PortalProvider } from '@tamagui/portal';
 import { TamaguiConfig } from './tamagui.config';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AppNavigator from './src/navigation/AppNavigator';

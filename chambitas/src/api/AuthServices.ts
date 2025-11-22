@@ -50,7 +50,7 @@ export const authService = {
     return response.AuthenticationResult; // Devuelve los tokens
   },
 
-  signUp: async ({ username, email, password, cellphone, address, state, city, type, imageUri }: SignUpCredentials) => {
+  signUp: async ({ username, email, password, cellphone, address,city, type, imageUri }: SignUpCredentials) => {
     const cleanEmail = email.trim().toLowerCase();
     const cleanNumber = cellphone.replace(/[^0-9]/g, '');
     const formattedPhone = cleanNumber.startsWith('52') 
@@ -64,8 +64,7 @@ export const authService = {
         { Name: 'email', Value: cleanEmail },
         { Name: 'phone_number', Value: formattedPhone },
         { Name: 'address', Value: address },
-        { Name: 'custom:state1', Value: state },
-        { Name: 'custom:city', Value: city },
+        { Name: 'custom:city', Value: city?.toString() },
         { Name: 'custom:type', Value: type.toString()},
         {Name: 'picture', Value: imageUri || ''}
       ],

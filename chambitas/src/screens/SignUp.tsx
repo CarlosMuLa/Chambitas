@@ -7,18 +7,12 @@ import { authService } from '../api/AuthServices';
 import { useNavigation } from '@react-navigation/native';
 import { uploadProfilePicture } from '../services/s3Service';
 import DropDownSelect from '../components/DropDownSelect';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X } from '@tamagui/lucide-icons';
 
 
 
 const SignUp = () => {
-    const StatesList = [
-        { label: 'Ciudad de México', value: '1'},
-        {label: 'Colima', value: '2'},
-        {label: 'Puebla', value: '3'},
-        {label: 'Jalisco', value: '4'},
-        {label: 'Nuevo León', value: '5'}
-    ];
 
     const citiesList = [
         {label: 'Benito Juárez', value: '1'},
@@ -35,13 +29,12 @@ const SignUp = () => {
     const [cellphone, setCellphone] = useState('');
     const [password, setPassword] = useState('');
     const [address, setAddress] = useState('');
-    const [state, setState] = useState(StatesList[0].value);
     const [city, setCity] = useState(citiesList[0].value);
     const [confirmPassword, setConfirmPassword] = useState('');
     const [type, setType] = useState(1); // 1 para trabajador, 2 para empleador
     const [imageUri, setImageUri] = useState<string | null>(null);
     const [isRegistering, setIsRegistering] = useState(false);
-
+    const insets = useSafeAreaInsets();
     
 
 
@@ -79,7 +72,7 @@ const SignUp = () => {
 };
 
 const handleSignUp =  async () => {
-    if(!email || !password || !cellphone || !username || !confirmPassword || !address || !state) {
+    if(!email || !password || !cellphone || !username || !confirmPassword || !address || !city) {
         alert('Por favor, completa todos los campos.');
         return;
     }
@@ -103,12 +96,12 @@ const handleSignUp =  async () => {
             return;
         }
     }
-    signUpMutation.mutate({ username, email, password, cellphone, address, state, type, imageUri: photoUrl});
+    signUpMutation.mutate({ username, email, password, cellphone, address, city, type, imageUri: photoUrl});
 
 };
     return (
-        <ScrollView style={{ flex: 1, padding: 16, backgroundColor: '#d4d3d3ff' }}>
-            <Form onSubmit={handleSignUp} disabled = {signUpMutation.isPending} >
+        <ScrollView style={{ flex: 1, padding: 16, backgroundColor: '#d4d3d3ff'  }}>
+            <Form onSubmit={handleSignUp} disabled = {signUpMutation.isPending} style={{ paddingBottom: insets.bottom + 20, paddingTop: 20 }}>
                 <YStack style={{ alignItems: 'center',gap:"$2", marginBottom:"$4" }} >
                     <H2>Crea tu cuenta</H2>
                     <Paragraph style ={{color: "#gray10"}}>Completa tus datos para empezar</Paragraph>
@@ -173,7 +166,7 @@ const handleSignUp =  async () => {
                     <XStack style={{alignItems: "center", justifyContent: "space-between", marginTop: "$4"}}>
                         <Label>¿Eres empleador?</Label>
                         <Switch size = "$4" onCheckedChange ={(val: any) => setType(val ? 2 : 1)} checked={type === 2}>
-                            <Switch.Thumb animation={"fast" as any} />
+                            <Switch.Thumb animation="bouncy" />
                         </Switch>
                     </XStack>
                 </YStack>
@@ -187,16 +180,8 @@ const handleSignUp =  async () => {
                     onChangeText={setAddress}
                     />
                 </YStack>
-                <YStack>
-                    <XStack style={{ alignItems: 'center', gap:10 }} >
-                        <Label>Estado:</Label>
-                        <DropDownSelect
-                            items={StatesList}
-                            value={state}
-                            onValueChange={setState}
-                            placeholder="Selecciona un estado"
-                        />
-                    </XStack>
+
+                <YStack style={{ marginTop: 20 }} >
                     <XStack style={{ alignItems: 'center', gap:10 , marginTop: "$4"}} >
                         <Label>Ciudad:</Label>
                         <DropDownSelect

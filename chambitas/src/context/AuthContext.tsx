@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (Platform.OS === 'web') {
       await  AsyncStorage.setItem('authTokens',token);
     } else {
-      await SecureStore.setItemAsync('authTokens',token);
+      await SecureStore.setItemAsync('authTokens',JSON.stringify(token));
     }
       setAccessToken(token);
     } catch (error) {
@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             storedTokens = await SecureStore.getItemAsync('authTokens');
           }
           if (storedTokens) {
-            setAccessToken(storedTokens);
+            setAccessToken(JSON.parse(storedTokens));
           }
         } catch (error) 
           {
