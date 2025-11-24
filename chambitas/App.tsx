@@ -6,6 +6,9 @@ import { TamaguiConfig } from './tamagui.config';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AppNavigator from './src/navigation/AppNavigator';
 import AuthProvider from './src/context/AuthContext';
+import { configureAmplify } from './src/services/aws-config';
+
+configureAmplify();
 
 const tamagui = createTamagui(TamaguiConfig);
 const queryClient = new QueryClient();

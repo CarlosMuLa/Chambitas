@@ -1,11 +1,35 @@
 import ChatPreview from '../components/ChatPreview';
-import React from 'react';
+import React, { useState, useEffect} from 'react';
 import { View, StyleSheet } from 'react-native';
 import { ScrollView, YStack } from 'tamagui';
+import { generateClient } from 'aws-amplify/api'
+
+const client = generateClient();
+    const GET_MESSAGES = `query GetMessages($conversationId: ID!) 
+    {
+        getMessages(conversationId: $conversationId) 
+        {
+            id
+            content
+            sender
+        }
+    }`;
+
+    const OnNewMessage = `subscription OnNewMessage($conversationId: ID!)
+    {
+        onNewMessage(conversationId: $conversationId){
+        id
+        content
+        sender
+        }
+    }`;
 
 
+export default function Chats() {
 
-const Chats = () => {
+    const [messages, setMessages] = useState([]);
+
+    useEffect()
     // Datos de ejemplo para las vistas previas de chat
     return (
         <View >
@@ -27,4 +51,3 @@ const Chats = () => {
                     </ScrollView>
                     </View>)};
 
-export default Chats;
