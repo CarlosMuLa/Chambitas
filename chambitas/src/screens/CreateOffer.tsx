@@ -3,6 +3,8 @@ import { ScrollView, XStack, YStack, Button, TextArea, Input, Form, Spinner, Lab
 import DropDownSelect from "../components/DropDownSelect";
 import { MyCalendar } from "../components/Calendar";
 import * as ImagePicker from 'expo-image-picker';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Insets } from "react-native";
 
 const CreateOffer = () => {
     const categories = [
@@ -24,6 +26,8 @@ const CreateOffer = () => {
     ];
     const [selectedCategory, setSelectedCategory] = useState(categories[1].label);
     const [selectedCity, setSelectedCity] = useState(citiesList[0].label);
+    const insets = useSafeAreaInsets();
+    
 
     const handleDateSelect = (date: string) => {
     console.log("Día seleccionado:", date);
@@ -43,8 +47,9 @@ const CreateOffer = () => {
     }
   }, [status])
     return (
-        <Form onSubmit={() => { setStatus('submitting')}} style={{ backgroundColor: '#d4d3d3ff' }}>
-            <YStack style={{  padding: 16 }} gap="$4">
+        <ScrollView>
+        <Form onSubmit={() => { setStatus('submitting')}} style={{ backgroundColor: '#d4d3d3ff' , paddingBottom: insets.bottom }}>
+            <YStack style={{  padding: 16, paddingTop: insets.top+20 }} gap="$4" >
                 <Input placeholder="Titulo de Oferta" />
                 <TextArea placeholder="Descripcion de la oferta..." size="$4" />
                 
@@ -107,11 +112,12 @@ const CreateOffer = () => {
                 <MyCalendar onDateSelect={handleDateSelect} />
                 </YStack>
                 <Form.Trigger asChild disabled = {status!=='off'}>
-                <Button icon={status === 'submitting' ? () => <Spinner/> : undefined}>
+                <Button icon={status === 'submitting' ? () => <Spinner/> : undefined} style={{ paddingBottom:insets.bottom + 20, margin: 16, backgroundColor: "#FA812F", color: "white" }}>
                     {status === 'submitting' ? 'Creando oferta...' : 'Crear Oferta'}
                 </Button>
                 </Form.Trigger>
         </Form>
+        </ScrollView>
     );
 };
 
