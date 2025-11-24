@@ -1,7 +1,10 @@
 import React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from "react-native";
-import { XStack } from "tamagui";
+import { Button, XStack } from "tamagui";
+import { LogOut } from "@tamagui/lucide-icons";
 import Offer from "../components/Offer";
+import { useCurrentUser } from "../hooks/currentUser";
+import { useAuth } from "../context/AuthContext";
 
 const offersHistory = [
     {
@@ -24,15 +27,46 @@ const offersHistory = [
     },
 ];
 
-const ProfileScreen = () => {
+const ProfileScreen = ({route}: {route: any}) => {
+    const { signOut } = useAuth();
+    let {username} = route.params || {};
+    const me = useCurrentUser();
+    let other = false;
+    let email = "";
+    let picture = "";
+    if (username && username !== me?.username) {
+        other = true;
+
+    }
+    else {
+        email = me?.email || "No disponible";
+        username = me?.username || "Invitado";
+        picture = me?.picture || "";
+    }
+
+    const handleSignOut = () => {
+        signOut();
+    };
     return (
         <ScrollView contentContainerStyle={styles.container}>
+            {!other && (
+                <XStack style={{width: "100%", justifyContent: "flex-end", marginBottom: 8}}>
+                    <Button 
+                        icon={LogOut} 
+                        circular 
+                        chromeless 
+                        size="$4"
+                        color="$red10"
+                        onPress={handleSignOut}
+                    />
+                </XStack>
+            )}
             <Image
-                source={{ uri: "https://randomuser.me/api/portraits/women/28.jpg" }}
+                source={{ uri: picture || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y' }}
                 style={styles.avatar}
             />
-            <Text style={styles.name}>CLaudia Sheinbaum</Text>
-            <Text style={styles.email}>claudia@email.com</Text>
+            <Text style={styles.name}>{username}</Text>
+            <Text style={styles.email}>{email}</Text>
             <TouchableOpacity style={styles.button}>
                 <Text style={styles.buttonText}>Editar Perfil</Text>
             </TouchableOpacity>

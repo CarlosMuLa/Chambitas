@@ -1,35 +1,19 @@
 import ChatPreview from '../components/ChatPreview';
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect, useRef} from 'react';
 import { View, StyleSheet } from 'react-native';
 import { ScrollView, YStack } from 'tamagui';
-import { generateClient } from 'aws-amplify/api'
-
-const client = generateClient();
-    const GET_MESSAGES = `query GetMessages($conversationId: ID!) 
-    {
-        getMessages(conversationId: $conversationId) 
-        {
-            id
-            content
-            sender
-        }
-    }`;
-
-    const OnNewMessage = `subscription OnNewMessage($conversationId: ID!)
-    {
-        onNewMessage(conversationId: $conversationId){
-        id
-        content
-        sender
-        }
-    }`;
+import { useGetMessages } from '../api/messagesServices';
+import { useChatSubscription } from '../api/messagesServices';
+import { useCurrentUser } from '../hooks/currentUser';
 
 
 export default function Chats() {
-
-    const [messages, setMessages] = useState([]);
-
-    useEffect()
+    const myUser = useCurrentUser();
+    const myUserName = myUser?.username || "Invitado"; 
+    const myUserId = myUser?.sub;
+    const { data, isLoading } = useGetMessages(conversationId);
+    useChatSubscription(conversationId);
+    const messages = data ? data.getMessages : [];
     // Datos de ejemplo para las vistas previas de chat
     return (
         <View >

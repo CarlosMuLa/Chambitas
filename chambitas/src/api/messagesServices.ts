@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/api';
 
 const client = generateClient();
@@ -15,6 +15,32 @@ const ON_NEW_MESSAGE = `
     }
   }
 `;
+
+const GET_MESSAGES = `query GetMessages($conversationId: ID!) {
+    getMessages(conversationId: $conversationId) {
+      id
+      content
+      sender
+      createdAt
+    }
+  }
+`;
+
+
+export const useGetMessages = (conversationId: string) => {
+  return useQuery({
+    queryKey: ['messages', conversationId],
+    queryFn: async () => {
+      // Usamos el mismo cliente de Amplify pero como Promesa (Query)
+      const response = await (client.graphql({
+        query: GET_MESSAGES,
+        variables: { conversationId }
+      }) as any); // 'as any' por el tema de tipos que vimos
+      
+      return response.data; // Devolvemos todo el objeto data
+    }
+  });
+};
 
 export const useChatSubscription = (conversationId: string) => {
   const queryClient = useQueryClient();

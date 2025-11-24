@@ -22,7 +22,7 @@ const LoginScreen = () => {
     const loginMutation = useMutation({
         mutationFn: authService.signIn,
         onSuccess: (data) => {
-            loginSuccess(data);
+            loginSuccess(data?.AccessToken, data?.IdToken);
         },
         onError: (error) => {
             console.error("Error al iniciar sesión:", error);

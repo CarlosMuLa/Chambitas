@@ -29,7 +29,7 @@ const linking: LinkingOptions<RootStackParamList> = {
                 path: '', // La ruta base (ej. "/") mostrará las pestañas principales
                 screens: {
                     Home: 'home', // -> /home
-                    Profile: 'profile', // -> /profile
+                    Profile: 'profile/:username?', // -> /profile or /profile/username
                     Chats: 'chats', // -> /chats
                 },
             },
@@ -49,7 +49,13 @@ function MainTabs() {
         >
              <Tab.Screen name="Home" component={Home} />
              <Tab.Screen name="Chats" component={Chats} />
-            <Tab.Screen name="Profile" component={ProfileScreen} />
+            <Tab.Screen name="Profile" component={ProfileScreen} 
+            listeners={({navigation})=> ({ 
+                tabPress: (e) => {
+                    e.preventDefault(); 
+                    navigation.navigate('Profile', { username: undefined });
+                    },
+                    })} />
             
         </Tab.Navigator>
     );  
