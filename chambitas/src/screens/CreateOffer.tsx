@@ -38,6 +38,8 @@ const CreateOffer = () => {
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState('');
     const [duration, setDuration] = useState(1);
+
+
     
     // 📸 NUEVO ESTADO: Array para guardar múltiples imágenes
     const [images, setImages] = useState<string[]>([]);

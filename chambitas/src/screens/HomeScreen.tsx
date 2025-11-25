@@ -14,15 +14,37 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'C
 const Home = () => {
     const navigation = useNavigation<HomeScreenNavigationProp>();
     const insets = useSafeAreaInsets();
+    const {data: posts, isLoading, error} = usePosts();
+    console.log("DATOS RECIBIDOS EN HOME:", JSON.stringify(posts, null, 2));
+
+    
+        const calculateHoursAgo = (dateString: string) => {
+            const created = new Date(dateString);
+            const now = new Date();
+            const diffMs = now.getTime() - created.getTime();
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            return Math.max(diffHours, 0); 
+        };
+
     return (
         <YStack style={{flex:1}}>
             <SearchBar />
         <ScrollView>
-        <XStack $maxMd={{ flexDirection: 'column' }} style={{ marginTop: 10, justifyContent: 'space-around', padding: 10 }}>
-            <Offer title="Fontaneria" timeStamp={2} imageUrl="https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" />
-            <Offer title="Jardineria" timeStamp={5} imageUrl="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" />
-            <Offer title="Jardineria" timeStamp={5} imageUrl="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" />
-
+        <XStack $maxMd={{ flexDirection: 'column' }} style={{ marginTop: 10, justifyContent: 'space-around', padding: 10 }}>{/* 4. Mapeo Dinámico */}
+                    {posts?.map((post: any) => (
+                        <Offer 
+                            key={post.offer_id} // Usamos el ID único de la BD
+                            title={post.title} 
+                            // Calculamos las horas o enviamos 0 si no hay fecha
+                            timeStamp={post.created_at ? calculateHoursAgo(post.created_at) : 0} 
+                            imageUrl={post.thumbnail || "https://via.placeholder.com/300"} // Imagen por defecto si no hay
+                        />
+                    ))}
+                    
+                    {/* Mensaje si no hay posts */}
+                    {!isLoading && posts?.length === 0 && (
+                        <Text style={{textAlign: "center", marginTop: 16}}>No hay ofertas disponibles aún.</Text>
+                    )}
         </XStack>
         </ScrollView>
         <Button circular
