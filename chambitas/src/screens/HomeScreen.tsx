@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState } from "react";
 import { View, Text, StyleSheet, TextInput, Animated } from "react-native";
 import { ScrollView, XStack, YStack, Button } from "tamagui";
 import { Plus } from "@tamagui/lucide-icons";
@@ -30,22 +30,27 @@ const Home = () => {
         <YStack style={{flex:1}}>
             <SearchBar />
         <ScrollView>
-        <XStack $maxMd={{ flexDirection: 'column' }} style={{ marginTop: 10, justifyContent: 'space-around', padding: 10 }}>{/* 4. Mapeo Dinámico */}
-                    {posts?.map((post: any) => (
-                        <Offer 
-                            key={post.offer_id} // Usamos el ID único de la BD
-                            title={post.title} 
-                            // Calculamos las horas o enviamos 0 si no hay fecha
-                            timeStamp={post.created_at ? calculateHoursAgo(post.created_at) : 0} 
-                            imageUrl={post.thumbnail || "https://via.placeholder.com/300"} // Imagen por defecto si no hay
-                        />
-                    ))}
-                    
-                    {/* Mensaje si no hay posts */}
-                    {!isLoading && posts?.length === 0 && (
-                        <Text style={{textAlign: "center", marginTop: 16}}>No hay ofertas disponibles aún.</Text>
-                    )}
-        </XStack>
+        {/* Contenedor principal para la cuadrícula de ofertas */}
+        <YStack style={{ padding:10}}>
+            {/* Usamos flexWrap para crear una cuadrícula que se ajusta automáticamente */}
+            {/* CAMBIO: justifyContent="center" para equilibrar los márgenes izquierdo y derecho */}
+            <XStack style={{flexWrap: "wrap", gap: "$3", justifyContent: "center"}}>
+                {posts?.map((post: any) => (
+                    <Offer 
+                        key={post.offer_id}
+                        title={post.title} 
+                        timeStamp={post.created_at ? calculateHoursAgo(post.created_at) : 0} 
+                        imageUrl={post.thumbnail || "https://via.placeholder.com/300"}
+                        price={post.price.toString()}
+                    />
+                ))}
+            </XStack>
+            
+            {/* Mensaje si no hay posts */}
+            {!isLoading && (!posts || posts.length === 0) && (
+                <Text style={{textAlign: "center", marginTop: 16}}>No hay ofertas disponibles aún.</Text>
+            )}
+        </YStack>
         </ScrollView>
         <Button circular
             size="$6"
