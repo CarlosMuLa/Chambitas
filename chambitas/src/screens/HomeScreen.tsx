@@ -37,7 +37,7 @@ const Home = () => {
             <XStack style={{flexWrap: "wrap", gap: "$3", justifyContent: "center"}}>
                 {posts?.map((post: any) => (
                     <Offer 
-                        key={post.offer_id}
+                        id={post.offer_id}
                         title={post.title} 
                         timeStamp={post.created_at ? calculateHoursAgo(post.created_at) : 0} 
                         imageUrl={post.thumbnail || "https://via.placeholder.com/300"}

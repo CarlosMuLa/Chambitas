@@ -9,7 +9,7 @@ export function Offer({id,title, timeStamp, imageUrl,price}: Readonly<{id:string
     const navigation = useNavigation<OfferProps['navigation']>();
 
     const handleCardPress = () => {
-        navigation.navigate('OfferDetails', { id:id });
+        navigation.navigate('OfferDetails', { id });
     }
 
     return (

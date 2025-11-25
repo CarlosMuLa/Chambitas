@@ -6,7 +6,7 @@ export type RootStackParamList = {
     Main: undefined;
     Login: undefined;
     Chats: { username: string };
-    OfferDetails: { title: string; timeStamp: number; imageUrl: string };
+    OfferDetails: { id: string; };
     MakingOffer: { id: string };
     CreateOffer: undefined;
     SignUp: undefined;
