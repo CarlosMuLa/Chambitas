@@ -1,5 +1,7 @@
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation/types';
 
 
 
@@ -25,8 +27,8 @@ interface GetPostsArgs {
 
 export const useCreatePost = () => {
     const queryClient = useQueryClient();
-    const navigation = useNavigation();
-    return useMutation({
+const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();    
+return useMutation({
         mutationFn: async (newPost: Post) => {
             const response = await fetch('https://k1b6y3wq9f.execute-api.us-east-2.amazonaws.com/posts', {
                 method: 'POST',
@@ -42,7 +44,7 @@ export const useCreatePost = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['posts'] });
-            navigation.navigate('Home');
+            navigation.navigate('Main');
 
         }
     });
