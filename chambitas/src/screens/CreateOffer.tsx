@@ -83,9 +83,9 @@ const CreateOffer = () => {
 
     const handleCreateOffer = async () => {
         // Validación simple
-        if (images.length === 0) 
+        if (images.length != 3) 
             {
-                alert("Por favor agrega al menos una imagen de tu trabajo.");
+                alert("Por favor agrega 3 imágenes de tu trabajo.");
                 return;
             }
          if (!idToken) 

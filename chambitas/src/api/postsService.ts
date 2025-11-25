@@ -1,4 +1,6 @@
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import { useNavigation } from '@react-navigation/native';
+
 
 
 interface Post {
@@ -20,8 +22,10 @@ interface GetPostsArgs {
     id?: number;
 }
 
+
 export const useCreatePost = () => {
     const queryClient = useQueryClient();
+    const navigation = useNavigation();
     return useMutation({
         mutationFn: async (newPost: Post) => {
             const response = await fetch('https://k1b6y3wq9f.execute-api.us-east-2.amazonaws.com/posts', {
@@ -38,6 +42,8 @@ export const useCreatePost = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['posts'] });
+            navigation.navigate('Home');
+
         }
     });
 };
