@@ -2,7 +2,8 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { fromCognitoIdentityPool } from "@aws-sdk/credential-provider-cognito-identity";
 
 // DATOS DE TU CONFIGURACIÓN (Pone estos en tu .env o config)
-const IDENTITY_POOL_ID = process.env.PUBLIC_EXPO_GUESS_IDENTITY_POOL_ID || ''; // Tu Identity Pool ID
+const IDENTITY_POOL_ID = process.env.PUBLIC_EXPO_IDENTITY_POOL_ID || ''; // Tu Identity Pool ID
+const USER_POOL_ID = process.env.PUBLIC_EXPO_USER_POOL_ID || ''; // Tu User Pool ID
 const BUCKET_NAME = "chambitas-uploads";
 const AWS_REGION = process.env.PUBLIC_EXPO_AWS_REGION || '';
 
@@ -14,6 +15,39 @@ const s3Client = new S3Client({
     identityPoolId: IDENTITY_POOL_ID,
   }),
 });
+
+export const uploadOfferImage = async (uri: string, idToken: string) => {
+  try {
+    const authS3Client = new S3Client({
+      region: AWS_REGION,
+      credentials: fromCognitoIdentityPool({
+        clientConfig: { region: AWS_REGION },
+        identityPoolId: IDENTITY_POOL_ID,
+        logins: {
+          [`cognito-idp.${AWS_REGION}.amazonaws.com/${USER_POOL_ID}`]: idToken
+        }
+      }),
+    });
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    const arrayBuffer = await new Response(blob).arrayBuffer();
+
+    const fileName = `offer-photos/${Date.now()}-${Math.floor(Math.random() * 1000)}.jpg`;
+
+    const command = new PutObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: fileName,
+      Body: new Uint8Array(arrayBuffer),
+      ContentType: "image/jpeg",
+    });
+    await authS3Client.send(command);
+
+    return `https://${BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/${fileName}`;
+  } catch (error) {
+    console.error("Error subiendo imagen de oferta a S3:", error);
+    throw error;
+  }
+};
 
 export const uploadProfilePicture = async (uri: string, userId: string) => {
   try {

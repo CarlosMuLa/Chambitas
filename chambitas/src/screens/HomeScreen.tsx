@@ -4,7 +4,7 @@ import { ScrollView, XStack, YStack, Button } from "tamagui";
 import { Plus } from "@tamagui/lucide-icons";
 import {Offer} from "../components/Offer";
 import SearchBar from "../components/SearchBar";
-
+import { usePosts } from "../api/postsService";
 import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";

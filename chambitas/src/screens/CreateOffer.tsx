@@ -5,10 +5,13 @@ import * as ImagePicker from 'expo-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCreatePost } from "../api/postsService";
 import { useCurrentUser } from "../hooks/currentUser";
+import { uploadOfferImage } from "../services/s3Service";
+import { useAuth } from "../context/AuthContext";
 // Iconos para eliminar foto (opcional, usa el que tengas o texto "X")
 import { X } from '@tamagui/lucide-icons'; 
 
 const CreateOffer = () => {
+    const { idToken } = useAuth();
     // ... (tus arrays de categories y citiesList siguen igual) ...
     const categories = [
         { label: 'Plomeria', value: '1' },
@@ -78,10 +81,22 @@ const CreateOffer = () => {
 
     const handleCreateOffer = async () => {
         // Validación simple
-        if (images.length === 0) {
-            alert("Por favor agrega al menos una imagen de tu trabajo.");
-            return;
-        }
+        if (images.length === 0) 
+            {
+                alert("Por favor agrega al menos una imagen de tu trabajo.");
+                return;
+            }
+         if (!idToken) 
+            {
+                alert("Error de sesión. Vuelve a iniciar sesión.");
+                return;
+            }
+        try 
+        {
+            const uploadedUrls = await Promise.all(
+                images.map(uri=> uploadOfferImage(uri,idToken))
+            );
+            console.log("Imágenes subidas a S3:", uploadedUrls);
 
         const newPost = {
             sub: currentUser?.sub || '',
@@ -90,18 +105,25 @@ const CreateOffer = () => {
             serviceType: Number(selectedCategory), // Ojo: aquí quizás debas buscar el value correspondiente al label
             city: Number(selectedCity),
             price: Number(price),
-            duration: duration,
+            duration: Number(duration),
             // Aquí enviamos el array de URIs. 
             // Tu servicio (useCreatePost) tendrá que encargarse de subir las 3 a S3
-            images: images 
+            thumbnail: uploadedUrls[0],      
+            image1: uploadedUrls[1] || null,
+            image2: uploadedUrls[2] || null, 
         };
+        
 
         try {
             await createPostMutation.mutateAsync(newPost);
         } catch (error) {
             console.error("Error al crear la oferta:", error);
         }
+    } catch (error) {
+        console.error("Error subiendo imágenes:", error);
+    }
     };
+    
 
     return (
         <ScrollView>
