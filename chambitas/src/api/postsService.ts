@@ -23,6 +23,7 @@ interface GetPostsArgs {
     category?: number;
     id?: number;
     search?: string;
+    cognito_sub?: string;
 }
 
 
@@ -55,12 +56,15 @@ export const usePosts = (args: GetPostsArgs = {}) => {
     return useQuery({
         queryKey: ['posts', args], 
         queryFn: () => fetchPosts(args),
+        staleTime: 5 * 60 * 1000, // 5 minutos
+        gcTime: 10 * 60 * 1000, // 10 minutos
+        refetchOnWindowFocus: false,
     });
 };
 
 
  const fetchPosts = async (args: GetPostsArgs) => {
-    const { cityId, category, id, search } = args;
+    const { cityId, category, id, search , cognito_sub} = args;
     const queryParams = new URLSearchParams();
     
     // Nota: Asegúrate que tu backend espera 'cityId' o 'city' (tu lambda usaba 'city')
@@ -68,6 +72,7 @@ export const usePosts = (args: GetPostsArgs = {}) => {
     if (cityId) queryParams.append('city', cityId.toString()); // Ajustado a lo que probablemente espera tu Lambda
     if (category) queryParams.append('category', category.toString()); // Ajustado a 'category'
     if (search) queryParams.append('search', search);
+    if (cognito_sub) queryParams.append('cognito_sub', cognito_sub);
 
     const response = await fetch(`https://k1b6y3wq9f.execute-api.us-east-2.amazonaws.com/posts?${queryParams.toString()}`, {
         method: 'GET',

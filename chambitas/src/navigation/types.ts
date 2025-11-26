@@ -10,7 +10,7 @@ export type RootStackParamList = {
     MakingOffer: { id: string };
     CreateOffer: undefined;
     SignUp: undefined;
-    ConfirmationCode: { username: string };
+    ConfirmationCode: { username: string, password: string  };
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =

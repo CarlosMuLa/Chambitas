@@ -18,7 +18,8 @@ export const useCurrentUser = () => {
       // Si necesitas el email, tendrías que guardar el ID Token en lugar del Access Token
       // o hacer una llamada extra a Cognito.
       email: decoded.email,
-      picture: decoded.picture // Si tienes un atributo personalizado para la foto
+      picture: decoded.picture,// Si tienes un atributo personalizado para la foto
+      type: decoded["custom:type"] ,// Si tienes un atributo personalizado para el tipo de usuario
 
     };
   } catch (error) {

@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, ReactNode, useContext} from 
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface AuthContextType {
   accessToken: string | null;
@@ -14,6 +15,7 @@ interface AuthContextType {
 export const Auth_Context = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const queryClient = useQueryClient();
   // Archivo encargado de manejar el contexto de autenticación, guardado de tokens, etc.
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [idToken, setIdToken] = useState<string | null>(null);
@@ -38,6 +40,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     try {
+      queryClient.clear();
       if (Platform.OS === 'web') {
         await AsyncStorage.removeItem('authTokens');
         await AsyncStorage.removeItem('idTokens');

@@ -11,9 +11,11 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/types";
 import { useDebounce } from "../hooks/useDebounce";
 import DropDownSelect from "../components/DropDownSelect";
+import { useCurrentUser } from "../hooks/currentUser";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'CreateOffer'>;
 const Home = () => {
+    const userType = useCurrentUser()?.type;
     const navigation = useNavigation<HomeScreenNavigationProp>();
     const insets = useSafeAreaInsets();
     const categories = [
@@ -71,6 +73,7 @@ const Home = () => {
                 {Array.isArray(posts) ? (
                 posts?.map((post: any) => (
                     <Offer 
+                        key={post.offer_id}
                         id={post.offer_id}
                         title={post.title} 
                         timeStamp={post.created_at ? calculateHoursAgo(post.created_at) : 0} 
@@ -89,6 +92,7 @@ const Home = () => {
             )}
         </YStack>
         </ScrollView>
+        {userType === "2" && (
         <Button circular
             size="$6"
             icon ={Plus}
@@ -98,6 +102,7 @@ const Home = () => {
             style={{ right: 20, bottom: insets.bottom + 20 }}
             onPress={() => navigation.navigate('CreateOffer')}
         />
+        )}
         </YStack>
         
     );

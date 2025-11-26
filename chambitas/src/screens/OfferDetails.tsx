@@ -1,21 +1,31 @@
- import { H1, Text, Button, Paragraph, Image, Card, YStack, XStack} from 'tamagui';
- import React from 'react';
- import { useNavigation } from '@react-navigation/native';
- import { RootStackScreenProps } from '../navigation/types';
- import { usePosts } from '../api/postsService';
+import { H1, Text, Button, Paragraph, Image, Card, YStack, XStack } from 'tamagui';
+import { LinearGradient } from '@tamagui/linear-gradient';
+import { ChevronLeft, ChevronRight } from '@tamagui/lucide-icons'; // 1. Importamos los iconos
+import React, { useState, useRef } from 'react'; // 2. Importamos useRef
+import { useNavigation } from '@react-navigation/native';
+import { RootStackScreenProps } from '../navigation/types';
+import { usePosts } from '../api/postsService';
+import { Dimensions, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 
- type OfferProps = RootStackScreenProps<'MakingOffer'>;
+type OfferProps = RootStackScreenProps<'MakingOffer'>;
 
-
+const { width: screenWidth } = Dimensions.get('window');
 
 const OfferDetails = ({ route }: { route: any }) => {
     const { id } = route.params;
     const { data: post } = usePosts({ id });
+    const [activeIndex, setActiveIndex] = useState(0);
+    const scrollViewRef = useRef<ScrollView>(null); // 3. Referencia al ScrollView
+
+    console.log("DETALLES DE LA OFERTA RECIBIDA:", JSON.stringify(post, null, 2));
 
     if (!post || post.length === 0) {
         return <Text>No se encontró la oferta.</Text>;
     }
-    const { title, thumbnail: imageUrl, created_at } = post[0];
+    
+    const { title, thumbnail: imageUrl, created_at, image1, image2, price, city_name, category_name, description } = post[0];
+
+    const carouselImages = [imageUrl, image1, image2].filter(img => img);
 
     const calculateHoursAgo = (dateString: string) => {
         const created = new Date(dateString);
@@ -30,19 +40,122 @@ const OfferDetails = ({ route }: { route: any }) => {
         navigation.navigate('MakingOffer', { id: route.params.id });
     };
 
+    const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+        const slideSize = event.nativeEvent.layoutMeasurement.width;
+        const index = event.nativeEvent.contentOffset.x / slideSize;
+        const roundIndex = Math.round(index);
+        setActiveIndex(roundIndex);
+    };
+
+    // 4. Funciones para los botones
+    const handleNext = () => {
+        if (activeIndex < carouselImages.length - 1) {
+            scrollViewRef.current?.scrollTo({ x: (activeIndex + 1) * screenWidth, animated: true });
+        }
+    };
+
+    const handlePrev = () => {
+        if (activeIndex > 0) {
+            scrollViewRef.current?.scrollTo({ x: (activeIndex - 1) * screenWidth, animated: true });
+        }
+    };
+
     return (
-        <YStack>
-            <Image
-                objectFit="contain"
-                source={{ uri: imageUrl }}
-                style={{ width: '100%', height: 200, borderRadius: 12 }}
-            />
-            <H1>{title}</H1>
-            <Paragraph>Publicado hace {calculateHoursAgo(created_at)} horas</Paragraph>
-            <Paragraph>Aquí van más detalles sobre la oferta de trabajo. Descripción, requisitos, beneficios, etc.</Paragraph>
-            <Button hoverStyle={{ scale: 1.02 }} pressStyle={{ scale: 0.98 }} onPress={handleMakeOffer}>Postularse</Button>
+        <YStack style={{ flex: 1 , backgroundColor: "$background"}}>
+            {/* 3. Carrusel de Imágenes */}
+            <YStack height={300} position="relative">
+                <ScrollView
+                    ref={scrollViewRef} // Conectamos la referencia
+                    horizontal
+                    pagingEnabled
+                    showsHorizontalScrollIndicator={false}
+                    onScroll={handleScroll}
+                    scrollEventThrottle={16}
+                    // Aseguramos que el scroll funcione definiendo tamaños explícitos
+                    style={{ width: screenWidth, height: 300 }}
+                    contentContainerStyle={{ width: screenWidth * carouselImages.length }}
+                >
+                    {carouselImages.map((img, index) => (
+                        <Image
+                            key={index}
+                            source={{ uri: img }}
+                            width={screenWidth}
+                            height={100 + '%'}
+                            objectFit="cover"
+                        />
+                    ))}
+                </ScrollView>
+                
+                {/* 5. Botones de Navegación (Flechas) */}
+                {activeIndex > 0 && (
+                    <Button
+                        position="absolute"
+                        style={{ left: 10 , top :150, backgroundColor: "rgba(0,0,0,0.5)", zIndex:10}}
+                        y={-20} // Ajuste para centrar verticalmente
+                        circular
+                        size="$3"
+                        icon={ChevronLeft}
+                        onPress={handlePrev}
+                        color="white"
+                        chromeless // Quita bordes extraños
+                    />
+                )}
+
+                {activeIndex < carouselImages.length - 1 && (
+                    <Button
+                        position="absolute"
+                        style={{ right: 10 , top :150, backgroundColor: "rgba(0,0,0,0.5)", zIndex:10}}
+                        y={-20}
+                        circular
+                        size="$3"
+                        icon={ChevronRight}
+                        onPress={handleNext}
+                        color="white"
+                        chromeless
+                    />
+                )}
+
+                {/* 4. Indicadores (Puntos) */}
+                <XStack 
+                    position="absolute" 
+                    style={{ bottom: 15, alignSelf: 'center', backgroundColor: "rgba(0,0,0,0.3)", paddingHorizontal:10, paddingVertical:5, borderRadius:20 }}
+                    gap="$2"
+                >
+                    {carouselImages.map((_, index) => (
+                        <YStack
+                            key={index}
+                            width={8}
+                            height={8}
+                            style={{ borderRadius: 4, backgroundColor: index === activeIndex ? 'white' : 'rgba(255,255,255,0.5)' }}
+                        />
+                    ))}
+                </XStack>
+            </YStack>
+
+            <YStack style={{ padding: 16 }} gap="$3">
+                <H1>{title}</H1>
+                <XStack gap="$3" style={{ alignItems: "center" , flexWrap: "wrap", paddingEnd: 100}}>
+                    <Paragraph style={{ color: "$gray10", fontSize: 20 }} >📍 {city_name}</Paragraph>
+                    <Paragraph style={{ color: "$gray10", fontSize: 20 }}>🏷️ {category_name}</Paragraph>
+                    <Paragraph style={{ color: "green", fontSize: 20 , fontWeight: "bold"}}>💲{price} 🇲🇽</Paragraph>
+                </XStack>
+
+                <Paragraph style={{ color: "$gray10" }}>Publicado hace {calculateHoursAgo(created_at)} horas</Paragraph>
+                
+                <Paragraph size="$4" lineHeight="$5">
+                    {description || "Aquí van más detalles sobre la oferta de trabajo. Descripción, requisitos, beneficios, etc."}
+                </Paragraph>
+                
+                <Button 
+                    style={{ marginTop: 16 }} 
+                    hoverStyle={{ scale: 1.02 }} 
+                    pressStyle={{ scale: 0.98 }} 
+                    onPress={handleMakeOffer}
+                >
+                    Postularse
+                </Button>
+            </YStack>
         </YStack>
-        
     );
 };
 

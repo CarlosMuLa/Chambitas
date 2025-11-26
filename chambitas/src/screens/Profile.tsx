@@ -1,34 +1,17 @@
 import React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from "react-native";
-import { Button, XStack } from "tamagui";
+import { Button, YStack , XStack, Spinner} from "tamagui";
 import { LogOut } from "@tamagui/lucide-icons";
 import Offer from "../components/Offer";
 import { useCurrentUser } from "../hooks/currentUser";
 import { useAuth } from "../context/AuthContext";
+import { usePosts } from "../api/postsService";
 
-const offersHistory = [
-    {
-        id: "1",
-        title: "Fontanería en baño",
-        timeStamp: 2,
-        imageUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
-    },
-    {
-        id: "2",
-        title: "Jardinería en casa",
-        timeStamp: 5,
-        imageUrl: "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
-    },
-    {
-        id: "3",
-        title: "Electricidad cocina",
-        timeStamp: 12,
-        imageUrl: "https://images.unsplash.com/photo-1464983953574-0892a716854b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
-    },
-];
 
 const ProfileScreen = ({route}: {route: any}) => {
+    
     const { signOut } = useAuth();
+    const currentUser = useCurrentUser();
     let {username} = route.params || {};
     const me = useCurrentUser();
     let other = false;
@@ -47,6 +30,17 @@ const ProfileScreen = ({route}: {route: any}) => {
     const handleSignOut = () => {
         signOut();
     };
+    const calculateHoursAgo = (dateString: string) => {
+            const created = new Date(dateString);
+            const now = new Date();
+            const diffMs = now.getTime() - created.getTime();
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            return Math.max(diffHours, 0); 
+        };
+    const {data: posts, isLoading, error} = usePosts({ cognito_sub: currentUser?.sub });
+    console.log("DATOS RECIBIDOS EN PROFILE:", JSON.stringify(posts, null, 2));
+    console.log("USUARIO ACTUAL EN PROFILE:", JSON.stringify(currentUser, null, 2));
+
     return (
         <ScrollView contentContainerStyle={styles.container}>
             {!other && (
@@ -71,21 +65,41 @@ const ProfileScreen = ({route}: {route: any}) => {
                 <Text style={styles.buttonText}>Editar Perfil</Text>
             </TouchableOpacity>
             <Text style={styles.historyTitle}>Historial de ofertas</Text>
-            <XStack
-                flexWrap="wrap"
-                gap={12}
-                $maxMd={{ flexDirection: "column" }}
-                style={styles.offersList}
-            >
-                {offersHistory.map((offer) => (
-                    <Offer
-                        key={offer.id}
-                        title={offer.title}
-                        timeStamp={offer.timeStamp}
-                        imageUrl={offer.imageUrl}
-                    />
-                ))}
-            </XStack>
+            <YStack style={{ padding:10}}>
+                {isLoading && (
+                    <YStack style={{ padding:20, alignItems: "center"}}>
+                        <Spinner size="large" color="orange"/>
+                    </YStack>
+                )}
+                {error && (
+                    <YStack style={{ padding:20, alignItems: "center"}}>
+                        <Text style={{ color: "red" }}>Error al cargar ofertas</Text>
+                    </YStack>
+                )}
+                        {/* Usamos flexWrap para crear una cuadrícula que se ajusta automáticamente */}
+                        {/* CAMBIO: justifyContent="center" para equilibrar los márgenes izquierdo y derecho */}
+                        <XStack style={{flexWrap: "wrap", gap: "$3", justifyContent: "center"}}>
+                            {Array.isArray(posts) ? (
+                            posts?.map((post: any) => (
+                                <Offer 
+                                    key={post.offer_id}
+                                    id={post.offer_id}
+                                    title={post.title} 
+                                    timeStamp={post.created_at ? calculateHoursAgo(post.created_at) : 0} 
+                                    imageUrl={post.thumbnail || "https://via.placeholder.com/300"}
+                                    price={post.price.toString()}
+                                />
+                            ))
+                        ):(
+                            !isLoading && <Text>No hay ofertas disponibles.</Text>
+                        )}
+                        </XStack>
+                        
+                        {/* Mensaje si no hay posts */}
+                        {!isLoading && Array.isArray(posts) && posts.length === 0 && (
+                            <Text style={{textAlign: "center", marginTop: 16}}>No has creado ofertas.</Text>
+                        )}
+                    </YStack>
         </ScrollView>
     );
 };

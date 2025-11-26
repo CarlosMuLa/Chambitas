@@ -43,7 +43,7 @@ const SignUp = () => {
     const signUpMutation = useMutation({
         mutationFn: authService.signUp,
         onSuccess: (data) => {
-            navigation.navigate('ConfirmationCode', { username });
+            navigation.navigate('ConfirmationCode', { username, password });
         },
         onError: (error) => {
             console.error("Error al registrarse:", error);

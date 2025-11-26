@@ -7,20 +7,32 @@ import { useMutation } from '@tanstack/react-query';
 import { authService } from '../api/AuthServices';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
+import { useRoute } from '@react-navigation/native';
 
 
 
 const ConfirmationCode = ({route}: { route: any }) => {
-    const { username } = route.params;
+    const { username, password } = route.params;
     type ConfirmationCodeNavigationProp = NativeStackNavigationProp<RootStackParamList, 'ConfirmationCode'>;
     const navigation = useNavigation<ConfirmationCodeNavigationProp>();
     const [code, setCode] = useState('');
     const { loginSuccess } = useAuth();
 
+
     const codeConfirmationMutation = useMutation({
         mutationFn: authService.confirmUser,
-        onSuccess: (data) => {
-            loginSuccess(data);
+        onSuccess: async () => {
+            if(password){
+                try {
+                    const tokens = await authService.signIn({username, password});
+                    if (tokens && tokens.AccessToken && tokens.IdToken) {
+                        await loginSuccess(tokens.AccessToken, tokens.IdToken);
+                }
+            }
+            catch (error) {
+                console.error("Error al iniciar sesión después de la confirmación:", error);
+            }
+            }
         },
         onError: (error) => {
             console.error("Error al confirmar el código:", error);
