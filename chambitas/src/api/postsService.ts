@@ -20,8 +20,9 @@ interface Post {
 
 interface GetPostsArgs {
     cityId?: number;
-    serviceTypeId?: number;
+    category?: number;
     id?: number;
+    search?: string;
 }
 
 
@@ -59,13 +60,14 @@ export const usePosts = (args: GetPostsArgs = {}) => {
 
 
  const fetchPosts = async (args: GetPostsArgs) => {
-    const { cityId, serviceTypeId, id } = args;
+    const { cityId, category, id, search } = args;
     const queryParams = new URLSearchParams();
     
     // Nota: Asegúrate que tu backend espera 'cityId' o 'city' (tu lambda usaba 'city')
     if (id) queryParams.append('id', id.toString());
     if (cityId) queryParams.append('city', cityId.toString()); // Ajustado a lo que probablemente espera tu Lambda
-    if (serviceTypeId) queryParams.append('category', serviceTypeId.toString()); // Ajustado a 'category'
+    if (category) queryParams.append('category', category.toString()); // Ajustado a 'category'
+    if (search) queryParams.append('search', search);
 
     const response = await fetch(`https://k1b6y3wq9f.execute-api.us-east-2.amazonaws.com/posts?${queryParams.toString()}`, {
         method: 'GET',

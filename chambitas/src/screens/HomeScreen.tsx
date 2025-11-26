@@ -1,6 +1,6 @@
 import React, {useState } from "react";
 import { View, Text, StyleSheet, TextInput, Animated } from "react-native";
-import { ScrollView, XStack, YStack, Button } from "tamagui";
+import { ScrollView, XStack, YStack, Button, Spinner } from "tamagui";
 import { Plus } from "@tamagui/lucide-icons";
 import {Offer} from "../components/Offer";
 import SearchBar from "../components/SearchBar";
@@ -9,12 +9,16 @@ import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/types";
+import { useDebounce } from "../hooks/useDebounce";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'CreateOffer'>;
 const Home = () => {
     const navigation = useNavigation<HomeScreenNavigationProp>();
     const insets = useSafeAreaInsets();
-    const {data: posts, isLoading, error} = usePosts();
+
+    const [searchQuery, setSearchQuery] = useState('');
+    const debouncedSearchQuery = useDebounce(searchQuery, 500);
+    const {data: posts, isLoading, error} = usePosts({ search: debouncedSearchQuery });
     console.log("DATOS RECIBIDOS EN HOME:", JSON.stringify(posts, null, 2));
 
     
@@ -28,14 +32,25 @@ const Home = () => {
 
     return (
         <YStack style={{flex:1}}>
-            <SearchBar />
+            <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
         <ScrollView>
         {/* Contenedor principal para la cuadrícula de ofertas */}
+        {isLoading  && (
+            <YStack style={{ padding:20, alignItems: "center"}}>
+                <Spinner size="large" color="orange"/>
+            </YStack>
+        )}
+        {error && (
+            <YStack style={{ padding:20, alignItems: "center"}}>
+                        <Text style={{ color: "red" }}>Error al cargar ofertas</Text>
+                    </YStack>
+        )}
         <YStack style={{ padding:10}}>
             {/* Usamos flexWrap para crear una cuadrícula que se ajusta automáticamente */}
             {/* CAMBIO: justifyContent="center" para equilibrar los márgenes izquierdo y derecho */}
             <XStack style={{flexWrap: "wrap", gap: "$3", justifyContent: "center"}}>
-                {posts?.map((post: any) => (
+                {Array.isArray(posts) ? (
+                posts?.map((post: any) => (
                     <Offer 
                         id={post.offer_id}
                         title={post.title} 
@@ -43,12 +58,15 @@ const Home = () => {
                         imageUrl={post.thumbnail || "https://via.placeholder.com/300"}
                         price={post.price.toString()}
                     />
-                ))}
+                ))
+            ):(
+                !isLoading && <Text>No hay ofertas disponibles.</Text>
+            )}
             </XStack>
             
             {/* Mensaje si no hay posts */}
-            {!isLoading && (!posts || posts.length === 0) && (
-                <Text style={{textAlign: "center", marginTop: 16}}>No hay ofertas disponibles aún.</Text>
+            {!isLoading && Array.isArray(posts) && posts.length === 0 && (
+                <Text style={{textAlign: "center", marginTop: 16}}>No hay ofertas que coincidan con "{debouncedSearchQuery}".</Text>
             )}
         </YStack>
         </ScrollView>

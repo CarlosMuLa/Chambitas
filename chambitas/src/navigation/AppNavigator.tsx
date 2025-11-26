@@ -33,7 +33,7 @@ const linking: LinkingOptions<RootStackParamList> = {
                     Chats: 'chats', // -> /chats
                 },
             },
-            OfferDetails: 'offer/:title', // -> /offer/algun-titulo
+            OfferDetails: 'offer/:id', // -> /offer/algun-titulo
             MakingOffer: 'make-offer/:id', // -> /make-offer/123
             CreateOffer: 'create-offer', // -> /create-offer
             Login: 'login', // -> /login
@@ -81,7 +81,7 @@ const AppNavigator = () => {
                 {accessToken ? (
                     <>
                     <Stack.Screen name="Main" component={MainTabs} />
-                    <Stack.Screen name="OfferDetails" component={OfferDetails} options={({ route }) => ({ title: route.params.title })} />
+                    <Stack.Screen name="OfferDetails" component={OfferDetails} options={{ title: 'Detalles de la Oferta' }} />
                     <Stack.Screen name="MakingOffer" component={MakingOffer} options={{ title: 'Hacer Oferta' }} />
                     <Stack.Screen name="CreateOffer" component={CreateOffer} options={{ title: 'Crear Oferta' }} />
                     

@@ -1,92 +1,25 @@
-import React, { useState } from 'react';
-import { View, TextInput, Text, FlatList, ActivityIndicator, StyleSheet } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
-import { useDebounce } from '../hooks/useDebounce';
+import React from 'react';
+import { Input, XStack } from 'tamagui';
 
-// Simulación de una llamada a la API
-const searchServicesAPI = async (query: string) => {
-  if (!query) {
-    return []; // No busques si el query está vacío
-  }
-  // En una app real, aquí harías: fetch(`https://tuapi.com/services?q=${query}`)
-  console.log(`Buscando en API: "${query}"`);
-  const response = await fetch(`https://jsonplaceholder.typicode.com/posts?q=${query}`);
-  if (!response.ok) {
-    throw new Error('Error en la red');
-  }
-  return response.json();
-};
 
-export const SearchBar = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  // Usamos el hook para obtener el término de búsqueda "retrasado"
-  const debouncedSearchTerm = useDebounce(searchTerm, 500); // Espera 500ms
+interface SearchBarProps {
+  value: string;
+  onChangeText: (text: string) => void;
+}
 
-  const { data, isLoading, isError, error } = useQuery({
-    // La 'queryKey' es única. TanStack la usa para el cache.
-    // Cambia cuando 'debouncedSearchTerm' cambia, lo que dispara una nueva búsqueda.
-    queryKey: ['searchServices', debouncedSearchTerm],
-    // La función que se ejecuta para obtener los datos.
-    queryFn: () => searchServicesAPI(debouncedSearchTerm),
-    // enabled: !!debouncedSearchTerm // Opcional: solo ejecuta si hay un término
-  });
-
+export const SearchBar = ({ value, onChangeText }: SearchBarProps) => {
   return (
-    <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        placeholder="Buscar plomero, electricista..."
-        value={searchTerm}
-        onChangeText={setSearchTerm}
-      />
-
-      {isLoading && <ActivityIndicator size="large" color="#DD0303" />}
-      
-      {isError && <Text style={styles.error}>Error: {error.message}</Text>}
-
-      {data && (
-        <FlatList
-          data={data}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.item}>
-              <Text style={styles.itemTitle}>{item.title}</Text>
-            </View>
-          )}
-        />
-      )}
-    </View>
+    <XStack style={{ alignItems: 'center', padding: 10 , backgroundColor: '#f0f0f0'}}
+        >
+            <Input style= {{ flex: 1, height: 40, borderRadius: 8, paddingHorizontal: 10, backgroundColor: '#e0e0e0'}}
+                placeholder="Buscar chambitas..." 
+                // 2. Conectamos las props al Input de Tamagui
+                value={value}
+                onChangeText={onChangeText}
+                borderWidth={0}
+            />
+        </XStack>
   );
 };
-
-const styles = StyleSheet.create({
-  container: { 
-    padding: 10
-   },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    marginBottom: 10,
-    width: '40%',
-    position: 'relative',
-    left: '30%',
-
-  },
-  item: {
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
-  itemTitle: {
-    fontWeight: 'bold',
-  },
-  error: {
-    color: 'red',
-  }
-});
 
 export default SearchBar;
