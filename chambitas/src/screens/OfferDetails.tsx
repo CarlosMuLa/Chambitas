@@ -1,21 +1,31 @@
-import { H1, Text, Button, Paragraph, Image, Card, YStack, XStack } from 'tamagui';
-import { LinearGradient } from '@tamagui/linear-gradient';
+import { H1, Text, Button, Paragraph, Image, Card, YStack, XStack, Spinner } from 'tamagui';
 import { ChevronLeft, ChevronRight } from '@tamagui/lucide-icons'; // 1. Importamos los iconos
 import React, { useState, useRef } from 'react'; // 2. Importamos useRef
 import { useNavigation } from '@react-navigation/native';
 import { RootStackScreenProps } from '../navigation/types';
 import { usePosts } from '../api/postsService';
-import { Dimensions, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
+import { Dimensions, ScrollView, NativeSyntheticEvent, NativeScrollEvent, useWindowDimensions } from 'react-native';
+import { useCurrentUser } from '../hooks/currentUser';
 
 type OfferProps = RootStackScreenProps<'MakingOffer'>;
 
-const { width: screenWidth } = Dimensions.get('window');
 
 const OfferDetails = ({ route }: { route: any }) => {
+    const { width } = useWindowDimensions(); 
+    const user = useCurrentUser();
     const { id } = route.params;
-    const { data: post } = usePosts({ id });
+    const { data: post, isLoading } = usePosts({ id });
     const [activeIndex, setActiveIndex] = useState(0);
     const scrollViewRef = useRef<ScrollView>(null); // 3. Referencia al ScrollView
+    const navigation = useNavigation<OfferProps['navigation']>();
+
+    if (isLoading) {
+        return (
+            <YStack style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Spinner size="large" color="orange" />
+            </YStack>
+        );
+    }
 
     console.log("DETALLES DE LA OFERTA RECIBIDA:", JSON.stringify(post, null, 2));
 
@@ -23,7 +33,7 @@ const OfferDetails = ({ route }: { route: any }) => {
         return <Text>No se encontró la oferta.</Text>;
     }
     
-    const { title, thumbnail: imageUrl, created_at, image1, image2, price, city_name, category_name, description } = post[0];
+    const { title, thumbnail: imageUrl, created_at, image1, image2, price, city_name, category_name, description, cognito_sub } = post[0];
 
     const carouselImages = [imageUrl, image1, image2].filter(img => img);
 
@@ -34,7 +44,6 @@ const OfferDetails = ({ route }: { route: any }) => {
         const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
         return Math.max(diffHours, 0); 
     }
-    const navigation = useNavigation<OfferProps['navigation']>();
 
     const handleMakeOffer = () => {
         navigation.navigate('MakingOffer', { id: route.params.id });
@@ -50,13 +59,13 @@ const OfferDetails = ({ route }: { route: any }) => {
     // 4. Funciones para los botones
     const handleNext = () => {
         if (activeIndex < carouselImages.length - 1) {
-            scrollViewRef.current?.scrollTo({ x: (activeIndex + 1) * screenWidth, animated: true });
+            scrollViewRef.current?.scrollTo({ x: (activeIndex + 1) * width, animated: true });
         }
     };
 
     const handlePrev = () => {
         if (activeIndex > 0) {
-            scrollViewRef.current?.scrollTo({ x: (activeIndex - 1) * screenWidth, animated: true });
+            scrollViewRef.current?.scrollTo({ x: (activeIndex - 1) * width, animated: true });
         }
     };
 
@@ -72,14 +81,14 @@ const OfferDetails = ({ route }: { route: any }) => {
                     onScroll={handleScroll}
                     scrollEventThrottle={16}
                     // Aseguramos que el scroll funcione definiendo tamaños explícitos
-                    style={{ width: screenWidth, height: 300 }}
-                    contentContainerStyle={{ width: screenWidth * carouselImages.length }}
+                    style={{ width: width, height: 300 }}
+                    contentContainerStyle={{ width: width * carouselImages.length }}
                 >
                     {carouselImages.map((img, index) => (
                         <Image
                             key={index}
                             source={{ uri: img }}
-                            width={screenWidth}
+                            width={width}
                             height={100 + '%'}
                             objectFit="cover"
                         />
@@ -145,7 +154,7 @@ const OfferDetails = ({ route }: { route: any }) => {
                 <Paragraph size="$4" lineHeight="$5">
                     {description || "Aquí van más detalles sobre la oferta de trabajo. Descripción, requisitos, beneficios, etc."}
                 </Paragraph>
-                
+                {user?.sub !== cognito_sub && (
                 <Button 
                     style={{ marginTop: 16 }} 
                     hoverStyle={{ scale: 1.02 }} 
@@ -154,6 +163,7 @@ const OfferDetails = ({ route }: { route: any }) => {
                 >
                     Postularse
                 </Button>
+                )}
             </YStack>
         </YStack>
     );

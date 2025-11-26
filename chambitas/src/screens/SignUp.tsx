@@ -76,6 +76,10 @@ const handleSignUp =  async () => {
         alert('Por favor, completa todos los campos.');
         return;
     }
+    if (!imageUri){
+        alert('Por favor, selecciona una foto de perfil.');
+        return;
+    }
     if (password !== confirmPassword) {
         alert('Las contraseñas no coinciden.');
         return false;

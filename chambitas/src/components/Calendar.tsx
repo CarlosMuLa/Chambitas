@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Calendar, LocaleConfig, DateData } from 'react-native-calendars';
 import { YStack } from 'tamagui';
 
@@ -15,27 +15,49 @@ LocaleConfig.defaultLocale = 'es';
 // Props que acepta tu componente
 interface MyCalendarProps {
   onDateSelect?: (date: string) => void;
-  markedDates?: { [key: string]: any }; // Para pasar puntos rojos, azules, etc.
+  // markedDates ahora representa días ocupados o con eventos
+  reservedDates?: string[]; // Ej: ['2025-11-28', '2025-11-29']
 }
 
-export const MyCalendar = ({ onDateSelect, markedDates = {} }: MyCalendarProps) => {
+export const MyCalendar = ({ onDateSelect, reservedDates = [] }: MyCalendarProps) => {
   const [selected, setSelected] = useState('');
+
+  // 1. Obtenemos la fecha de hoy en formato YYYY-MM-DD para bloquear el pasado
+  const today = new Date().toISOString().split('T')[0];
+
+  // 2. Transformamos el array de fechas reservadas al formato del calendario
+  const markedDates = useMemo(() => {
+    const marks: any = {};
+
+    // Marcamos los días reservados (vienen de la BD)
+    reservedDates.forEach(date => {
+      marks[date] = {
+        disabled: true,          // No se puede seleccionar
+        disableTouchEvent: true, // No responde al click
+        marked: true,            // Muestra un puntito
+        dotColor: 'red',         // Color del puntito (ocupado)
+        textColor: 'gray'        // Color del texto del día (deshabilitado)
+      };
+    });
+
+    // Agregamos la selección actual del usuario (si existe)
+    if (selected) {
+      marks[selected] = {
+        ...marks[selected], // Mantenemos propiedades si coincidiera (raro si está disabled)
+        selected: true,
+        disableTouchEvent: true,
+        selectedColor: '#FA812F', // Tu color naranja
+        selectedTextColor: 'white'
+      };
+    }
+
+    return marks;
+  }, [reservedDates, selected]);
 
   const handleDayPress = (day: DateData) => {
     setSelected(day.dateString);
     if (onDateSelect) {
       onDateSelect(day.dateString);
-    }
-  };
-
-  // Fusionamos la selección actual con las marcas que vienen de fuera (ej. días con chamba)
-  const combinedMarkedDates = {
-    ...markedDates,
-    [selected]: {
-      selected: true,
-      disableTouchEvent: true,
-      selectedDotColor: 'orange',
-      ...markedDates[selected] // Mantiene el punto si el día seleccionado tenía evento
     }
   };
 
@@ -48,21 +70,25 @@ export const MyCalendar = ({ onDateSelect, markedDates = {} }: MyCalendarProps) 
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 4,
-      elevation: 3 // Sombra para Android
+      elevation: 3
     }}>
       <Calendar
+        // 3. Bloqueamos días anteriores a hoy
+        minDate={today}
+        
         onDayPress={handleDayPress}
-        markedDates={combinedMarkedDates}
-        // Personalización de colores para que combine con tu App
+        markedDates={markedDates}
+        
+        // Personalización visual
         theme={{
           backgroundColor: '#ffffff',
           calendarBackground: '#ffffff',
           textSectionTitleColor: '#b6c1cd',
-          selectedDayBackgroundColor: '#FA812F', // Tu Naranja
+          selectedDayBackgroundColor: '#FA812F',
           selectedDayTextColor: '#ffffff',
           todayTextColor: '#FA812F',
           dayTextColor: '#2d4150',
-          textDisabledColor: '#d9e1e8',
+          textDisabledColor: '#d9e1e8', // Color de días pasados
           dotColor: '#FA812F',
           selectedDotColor: '#ffffff',
           arrowColor: '#FA812F',
