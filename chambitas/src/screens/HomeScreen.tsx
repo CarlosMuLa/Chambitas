@@ -1,7 +1,7 @@
 import React, {useState } from "react";
 import { View, Text, StyleSheet, TextInput, Animated } from "react-native";
 import { ScrollView, XStack, YStack, Button, Spinner } from "tamagui";
-import { Plus } from "@tamagui/lucide-icons";
+import { Plus, X } from "@tamagui/lucide-icons";
 import {Offer} from "../components/Offer";
 import SearchBar from "../components/SearchBar";
 import { usePosts } from "../api/postsService";
@@ -10,15 +10,23 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/types";
 import { useDebounce } from "../hooks/useDebounce";
+import DropDownSelect from "../components/DropDownSelect";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'CreateOffer'>;
 const Home = () => {
     const navigation = useNavigation<HomeScreenNavigationProp>();
     const insets = useSafeAreaInsets();
-
+    const categories = [
+        { label: 'Seleccionar categoría', value: '' },
+        { label: 'Plomeria', value: '1' },
+        { label: 'Jardineria', value: '2'},
+        { label: 'Electricista', value: '3' },
+        { label: 'Limpieza', value: '4' }
+    ];
+    const [selectedCategory, setSelectedCategory] = useState(categories[0].label);
     const [searchQuery, setSearchQuery] = useState('');
     const debouncedSearchQuery = useDebounce(searchQuery, 500);
-    const {data: posts, isLoading, error} = usePosts({ search: debouncedSearchQuery });
+    const {data: posts, isLoading, error} = usePosts({ search: debouncedSearchQuery, category: selectedCategory ? parseInt(selectedCategory) : undefined });
     console.log("DATOS RECIBIDOS EN HOME:", JSON.stringify(posts, null, 2));
 
     
@@ -32,7 +40,18 @@ const Home = () => {
 
     return (
         <YStack style={{flex:1}}>
-            <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
+            <XStack style={{padding: 12, gap: 8, alignItems: "center"}}>
+                <YStack flex={1}>
+                    <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
+                </YStack>
+                <DropDownSelect
+                    items={categories}
+                    value={selectedCategory}
+                    onValueChange={setSelectedCategory}
+                    placeholder="Filtro"
+                    width={140}
+                />
+            </XStack>
         <ScrollView>
         {/* Contenedor principal para la cuadrícula de ofertas */}
         {isLoading  && (
