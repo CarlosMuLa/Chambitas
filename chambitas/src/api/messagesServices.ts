@@ -1,9 +1,13 @@
 import { useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/api';
 import { useCurrentUser } from '../hooks/currentUser';
+import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const client = generateClient();
+const API_URL = process.env.PUBLIC_EXPO_GRAPHQL_API_URL;
 
 // La definición de la suscripción GraphQL
 const ON_NEW_MESSAGE = `
@@ -39,6 +43,24 @@ const GET_MY_CONVERSATIONS = `
   }
 `;
 
+const SEND_MESSAGE = `
+  mutation SendMessage($conversationId: ID!, $content: String!, $sender: String!) {
+    sendMessage(conversationId: $conversationId, content: $content, sender: $sender) {
+      id
+      content
+      sender
+      createdAt
+    }
+  }
+`;  
+
+const getToken = async () => {
+  if (Platform.OS === 'web') {
+    return await AsyncStorage.getItem('authTokens');
+  }
+  return await SecureStore.getItemAsync('authTokens');
+};
+
 export const useMyConversations = () => {
   const user = useCurrentUser();
   const userId = user?.sub;
@@ -49,12 +71,32 @@ export const useMyConversations = () => {
     queryKey: ['myConversations', userId],
     queryFn: async () => {
       if (!userId) return [];
+      const token = await getToken();
+
+      if(!API_URL) {
+        console.error("API_URL no está definido");
+        return [];
+      }
+
       try {
-          const response = await (client.graphql({
-            query: GET_MY_CONVERSATIONS,
-            variables: { userId }
-          }) as any);
-          return response.data.getMyConversations;
+          const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': token || '',
+              // Agrega aquí el token de autenticación si es necesario
+            },
+            body: JSON.stringify({
+              query: GET_MY_CONVERSATIONS,
+              variables: { userId }
+            })
+          });
+          const result = await response.json();
+          if (result.errors) {
+            console.error("Errores en la respuesta GraphQL:", result.errors);
+            return [];
+          }
+          return result.data.getMyConversations;
       } catch (error) {
           console.error("Error cargando chats:", error);
           return [];
@@ -107,4 +149,37 @@ export const useChatSubscription = (conversationId: string) => {
     // 3. Limpieza al salir de la pantalla
     return () => sub.unsubscribe();
   }, [conversationId, queryClient]);
+};
+
+
+export const useSendMessage = (conversationId: string, content: string, sender: string) => {
+  return useMutation({
+    mutationFn: async () => {
+      // Obtenemos el token manual
+      const token = await getToken();
+      if(!API_URL) {
+        throw new Error("API_URL no está definido");
+      }
+      // Hacemos la petición HTTP directa a AppSync
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token || '' 
+        },
+        body: JSON.stringify({
+          query: SEND_MESSAGE,
+          variables: { conversationId, content, sender }
+        })
+      });
+
+      const json = await response.json();
+      
+      if (json.errors) {
+        throw new Error(json.errors[0].message);
+      }
+
+      return json.data.sendMessage;
+    }
+  });
 };

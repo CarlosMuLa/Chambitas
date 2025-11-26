@@ -1,28 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, use } from 'react';
 import { useRoute } from '@react-navigation/native';
-import { YStack, XStack, Input, Button, ScrollView, Text, Spinner, Paragraph, Avatar } from 'tamagui';
+import { YStack, XStack, Input, Button, ScrollView, Text, Spinner, Paragraph, Avatar, getToken } from 'tamagui';
 import { useGetMessages, useChatSubscription } from '../api/messagesServices';
 import { useCurrentUser } from '../hooks/currentUser';
-import { useMutation } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/api';
+import { useSendMessage } from '../api/messagesServices';
+
 
 // Definir la mutación de envío aquí o importarla si la tienes en services
 const client = generateClient();
-const SEND_MESSAGE = `
-  mutation SendMessage($conversationId: ID!, $content: String!, $sender: String!) {
-    sendMessage(conversationId: $conversationId, content: $content, sender: $sender) {
-      id
-      content
-      sender
-      createdAt
-    }
-  }
-`;
+
 
 export default function ChatDetailScreen() {
     const route = useRoute();
-    // 1. Recibimos el ID de la conversación desde la navegación
-    // (Si TS se queja, usa 'any' temporalmente en route.params)
     const { conversationId, name } = route.params as { conversationId: string; name: string };
     
     const user = useCurrentUser();
@@ -34,17 +24,17 @@ export default function ChatDetailScreen() {
     const { data, isLoading } = useGetMessages(conversationId);
     useChatSubscription(conversationId);
 
-    // 3. Mutación para enviar mensaje
-    const sendMessage = async () => {
-        if (!text.trim()) return;
+    const sendMessageMutation = useSendMessage(conversationId, text, myUser);
+
+
+
+    const handleSendMessage = async () => {
+        if (text.trim() === "") return;
         try {
-            await client.graphql({
-                query: SEND_MESSAGE,
-                variables: { conversationId, content: text, sender: myUser }
-            });
-            setText(""); // Limpiar input
-        } catch (e) {
-            console.error("Error enviando:", e);
+            await sendMessageMutation.mutateAsync();
+            setText("");
+        } catch (error) {
+            console.error("Error al enviar el mensaje:", error);
         }
     };
 
@@ -97,7 +87,7 @@ export default function ChatDetailScreen() {
                     onChangeText={setText} 
                     placeholder="Escribe un mensaje..." 
                 />
-                <Button onPress={sendMessage} style={{ backgroundColor: "$orange10", color: "white" }}>
+                <Button onPress={handleSendMessage} style={{ backgroundColor: "$orange10", color: "white" }}>
                     Enviar
                 </Button>
             </XStack>
