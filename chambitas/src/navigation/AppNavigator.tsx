@@ -16,6 +16,7 @@ import CreateOffer from "../screens/CreateOffer";
 import SignUp from "../screens/SignUp";
 import { useAuth } from "../context/AuthContext";
 import ConfirmationCode from "../screens/ConfirmationCode";
+import ChatDetailScreen from "../screens/ChatDetailScreen";
 
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -38,6 +39,7 @@ const linking: LinkingOptions<RootStackParamList> = {
             CreateOffer: 'create-offer', // -> /create-offer
             Login: 'login', // -> /login
             SignUp: 'sign-up', // -> /sign-up
+            ChatDetail: 'chat/:conversationId', // -> /chat/456
         },
     },
 };
@@ -84,6 +86,7 @@ const AppNavigator = () => {
                     <Stack.Screen name="OfferDetails" component={OfferDetails} options={{ title: 'Detalles de la Oferta' }} />
                     <Stack.Screen name="MakingOffer" component={MakingOffer} options={{ title: 'Hacer Oferta' }} />
                     <Stack.Screen name="CreateOffer" component={CreateOffer} options={{ title: 'Crear Oferta' }} />
+                    <Stack.Screen name="ChatDetail" component={ChatDetailScreen} options={({ route }) => ({ title: route.params.name || 'Chat' })}/>
                     
                     </>
                 ) : (

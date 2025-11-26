@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/api';
+import { useCurrentUser } from '../hooks/currentUser';
 
 const client = generateClient();
 
@@ -25,6 +26,43 @@ const GET_MESSAGES = `query GetMessages($conversationId: ID!) {
     }
   }
 `;
+
+const GET_MY_CONVERSATIONS = `
+  query GetMyConversations($userId: String!) {
+    getMyConversations(userId: $userId) {
+      id
+      name
+      lastMessage
+      updatedAt
+      participants
+    }
+  }
+`;
+
+export const useMyConversations = () => {
+  const user = useCurrentUser();
+  const userId = user?.sub;
+
+  console.log("Buscando chats para usuario:", userId); // 👀 Agrega este log para depurar
+
+  return useQuery({
+    queryKey: ['myConversations', userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      try {
+          const response = await (client.graphql({
+            query: GET_MY_CONVERSATIONS,
+            variables: { userId }
+          }) as any);
+          return response.data.getMyConversations;
+      } catch (error) {
+          console.error("Error cargando chats:", error);
+          return [];
+      }
+    },
+    enabled: !!userId, // Solo se ejecuta si hay usuario
+  });
+};
 
 
 export const useGetMessages = (conversationId: string) => {

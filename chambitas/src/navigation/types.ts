@@ -11,6 +11,7 @@ export type RootStackParamList = {
     CreateOffer: undefined;
     SignUp: undefined;
     ConfirmationCode: { username: string, password: string  };
+    ChatDetail: { conversationId: string; name?: string };
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =
