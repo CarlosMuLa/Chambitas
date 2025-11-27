@@ -31,9 +31,6 @@ const amplifyConfig = {
 };
 
 export const configureAmplify = () => {
-
-  console.log("AAAAAAAAAAAAConfigurando Amplify con:");
-  console.log(amplifyConfig);
   Amplify.configure(amplifyConfig as any,{
     API: {
       GraphQL:{
@@ -44,5 +41,4 @@ export const configureAmplify = () => {
       }
     }
   });
-  console.log("Amplify configurado con:", amplifyConfig);
-}
+};

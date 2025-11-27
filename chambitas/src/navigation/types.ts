@@ -6,8 +6,8 @@ export type RootStackParamList = {
     Main: undefined;
     Login: undefined;
     Chats: { username: string };
-    OfferDetails: { id: string; };
-    MakingOffer: { id: string };
+    OfferDetails: { id: string };
+    MakingOffer: { id: string, sub?: string, title?: string };
     CreateOffer: undefined;
     SignUp: undefined;
     ConfirmationCode: { username: string, password: string  };

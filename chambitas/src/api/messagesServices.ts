@@ -52,7 +52,17 @@ const SEND_MESSAGE = `
       createdAt
     }
   }
-`;  
+`;
+
+const CREATE_CONVERSATION = `
+mutation CreateConversation($participants: [String!]!, $name: String) {
+    createConversation(participants: $participants, name: $name) {
+      id
+      name
+      participants
+    }
+  }
+`;
 
 const getToken = async () => {
   if (Platform.OS === 'web') {
@@ -248,6 +258,36 @@ export const useSendMessage = (conversationId: string, content: string, sender: 
       }
 
       return json.data.sendMessage;
+    }
+  });
+};
+
+export const useCreateConversation = (participants: string[], name?: string) => {
+  return useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if(!API_URL) {
+        throw new Error("API_URL no está definido");
+      }
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token || '' 
+        },
+        body: JSON.stringify({
+          query: CREATE_CONVERSATION,
+          variables: { participants, name }
+        })
+      });
+
+      const json = await response.json();
+      
+      if (json.errors) {
+        throw new Error(json.errors[0].message);
+      }
+
+      return json.data.createConversation;
     }
   });
 };

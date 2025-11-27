@@ -15,6 +15,7 @@ const OfferDetails = ({ route }: { route: any }) => {
     const user = useCurrentUser();
     const { id } = route.params;
     const { data: post, isLoading } = usePosts({ id });
+    
     const [activeIndex, setActiveIndex] = useState(0);
     const scrollViewRef = useRef<ScrollView>(null); // 3. Referencia al ScrollView
     const navigation = useNavigation<OfferProps['navigation']>();
@@ -46,7 +47,7 @@ const OfferDetails = ({ route }: { route: any }) => {
     }
 
     const handleMakeOffer = () => {
-        navigation.navigate('MakingOffer', { id: route.params.id });
+        navigation.navigate('MakingOffer', { id: route.params.id, sub: user?.sub, title: title });
     };
 
     const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {

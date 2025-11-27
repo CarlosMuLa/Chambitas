@@ -26,6 +26,15 @@ interface GetPostsArgs {
     cognito_sub?: string;
 }
 
+interface Order 
+{
+    offer_id: string;
+    cognito_sub?: string;
+    startTime?: string;
+    price?: number;
+    timeUnit?: string;
+}
+
 
 export const useCreatePost = () => {
     const queryClient = useQueryClient();
@@ -83,3 +92,48 @@ export const usePosts = (args: GetPostsArgs = {}) => {
     }
     return response.json();
 };
+
+
+export const createOrder = () => {
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();    
+    return useMutation({
+        mutationFn: async (newOrder: Order) => {
+            const response = await fetch ('https://k1b6y3wq9f.execute-api.us-east-2.amazonaws.com/createOffer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newOrder),
+            });
+            if (!response.ok) {
+                throw new Error('Failed to create order');
+            }
+            return response.json();
+        },
+    })
+};
+
+export const getOrdersById = async (args: Order) =>{
+    const { offer_id, cognito_sub } = args;
+    const queryParams = new URLSearchParams();
+    
+    if (offer_id) queryParams.append('offer_id', offer_id.toString());
+    if (cognito_sub) queryParams.append('cognito_sub', cognito_sub.toString());
+    const response = await fetch(`https://k1b6y3wq9f.execute-api.us-east-2.amazonaws.com/getOffer?${queryParams.toString()}`, {
+        method: 'GET',
+    });
+    if (!response.ok) {
+        throw new Error('Failed to fetch orders');
+    }
+    return response.json();
+}
+
+export const useGetOrdersById = (args: Order) => {
+    return useQuery({
+        queryKey: ['orders', args],
+        queryFn: () => getOrdersById(args),
+        staleTime: 5 * 60 * 1000, // 5 minutos
+        gcTime: 10 * 60 * 1000, // 10 minutos
+        refetchOnWindowFocus: false,
+    });
+}

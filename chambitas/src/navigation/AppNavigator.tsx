@@ -35,7 +35,7 @@ const linking: LinkingOptions<RootStackParamList> = {
                 },
             },
             OfferDetails: 'offer/:id', // -> /offer/algun-titulo
-            MakingOffer: 'make-offer/:id', // -> /make-offer/123
+            MakingOffer: 'make-offer/:id/:sub?/:title?', // -> /make-offer/123
             CreateOffer: 'create-offer', // -> /create-offer
             Login: 'login', // -> /login
             SignUp: 'sign-up', // -> /sign-up

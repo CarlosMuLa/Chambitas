@@ -8,6 +8,7 @@ import { useSendMessage } from '../api/messagesServices';
 import { useChatSubscriptionManual } from '../api/sockets';
 import { RootStackParamList } from '../navigation/types';
 import { RouteProp } from '@react-navigation/native';
+import { useQueryClient} from '@tanstack/react-query'
 
 type ChatDetailRouteProp = RouteProp<RootStackParamList, 'ChatDetail'>;
 
@@ -19,9 +20,7 @@ const client = generateClient();
 export default function ChatDetailScreen() {
     const route = useRoute<ChatDetailRouteProp>();
     const { conversationId, name } = route.params;
-
-    console.log("🔍 ChatDetail cargado con conversationId:", conversationId);
-    console.log("🔍 ChatDetail cargado con name:", name);
+    const queryClient = useQueryClient();
     
     
     const user = useCurrentUser();
@@ -51,11 +50,27 @@ export default function ChatDetailScreen() {
 
     const handleSendMessage = async () => {
         if (text.trim() === "") return;
+        const tempMessage = {
+            id: Date.now().toString(), 
+            content: text,
+            sender: myUser, // Tu usuario
+            createdAt: new Date().toISOString(),
+            conversationId: conversationId
+        };
+        queryClient.setQueryData(['messages', conversationId], (oldData: any) => {
+            // Si no hay datos previos, creamos el array
+            if (!oldData) return [tempMessage];
+            
+            // Si ya existen, lo agregamos al final
+            return [...oldData, tempMessage];
+        });
+
         try {
             await sendMessageMutation.mutateAsync();
-            setText("");
+            queryClient.invalidateQueries({queryKey: ['messages', conversationId]});
         } catch (error) {
             console.error("Error al enviar el mensaje:", error);
+            alert("Error al enviar el mensaje. Por favor, intenta de nuevo.");
         }
     };
 
