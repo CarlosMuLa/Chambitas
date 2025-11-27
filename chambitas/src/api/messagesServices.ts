@@ -5,6 +5,9 @@ import { useCurrentUser } from '../hooks/currentUser';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation/types';
 
 const API_URL = process.env.PUBLIC_EXPO_GRAPHQL_API_URL;
 const REAL_TIME_API_URL = process.env.PUBLIC_EXPO_REALTIME_API_URL;
@@ -263,6 +266,8 @@ export const useSendMessage = (conversationId: string, content: string, sender: 
 };
 
 export const useCreateConversation = (participants: string[], name?: string) => {
+    const queryClient = useQueryClient();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>(); 
   return useMutation({
     mutationFn: async () => {
       const token = await getToken();
@@ -288,6 +293,10 @@ export const useCreateConversation = (participants: string[], name?: string) => 
       }
 
       return json.data.createConversation;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['myConversations'] });
+      navigation.navigate('Main');
     }
   });
 };

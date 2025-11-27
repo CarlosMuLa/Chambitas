@@ -19,6 +19,7 @@ const OfferDetails = ({ route }: { route: any }) => {
     const [activeIndex, setActiveIndex] = useState(0);
     const scrollViewRef = useRef<ScrollView>(null); // 3. Referencia al ScrollView
     const navigation = useNavigation<OfferProps['navigation']>();
+    const postSub = post && post.length > 0 ? post[0].cognito_sub : null;
 
     if (isLoading) {
         return (
@@ -47,7 +48,7 @@ const OfferDetails = ({ route }: { route: any }) => {
     }
 
     const handleMakeOffer = () => {
-        navigation.navigate('MakingOffer', { id: route.params.id, sub: user?.sub, title: title });
+        navigation.navigate('MakingOffer', { id: route.params.id, sub: postSub, title: title });
     };
 
     const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
