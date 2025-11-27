@@ -68,6 +68,7 @@ export default function ChatDetailScreen() {
         try {
             await sendMessageMutation.mutateAsync();
             queryClient.invalidateQueries({queryKey: ['messages', conversationId]});
+            setText("");
         } catch (error) {
             console.error("Error al enviar el mensaje:", error);
             alert("Error al enviar el mensaje. Por favor, intenta de nuevo.");

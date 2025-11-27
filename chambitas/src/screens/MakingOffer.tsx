@@ -18,7 +18,7 @@ const MakingOffer = ({ route }: { route: any }) => {
 
     // Preparar datos derivados de forma segura (fallback a valores vacíos si no ha cargado)
     const currentPost = post?.[0];
-    const participants = (currentPost && user) ? [currentPost.sub, user.sub] : [];
+    const participants = (sub && user) ? [sub, user.sub] : [];
     console.log("PARTICIPANTES PARA LA CONVERSACIÓN:", participants);
     const chatname = currentPost ? `${currentPost.title} + ${id}` : '';
 
