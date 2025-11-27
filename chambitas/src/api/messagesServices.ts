@@ -7,6 +7,7 @@ import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_URL = process.env.PUBLIC_EXPO_GRAPHQL_API_URL;
+const REAL_TIME_API_URL = process.env.PUBLIC_EXPO_REALTIME_API_URL;
 
 // La definición de la suscripción GraphQL
 const ON_NEW_MESSAGE = `
@@ -55,9 +56,9 @@ const SEND_MESSAGE = `
 
 const getToken = async () => {
   if (Platform.OS === 'web') {
-    return await AsyncStorage.getItem('authTokens');
+    return await AsyncStorage.getItem('idTokens');
   }
-  return await SecureStore.getItemAsync('authTokens');
+  return await SecureStore.getItemAsync('idTokens');
 };
 
 export const useMyConversations = () => {
@@ -147,29 +148,74 @@ export const useChatSubscription = (conversationId: string) => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const client = generateClient();
-    // 1. Iniciar la suscripción con Amplify
-    const sub = (client.graphql({
-      query: ON_NEW_MESSAGE,
-      variables: { conversationId }
-    })as any).subscribe({
-      next: ({ data }: any) => {
-        const newMessage = data.onNewMessage;
-        console.log("¡Nuevo mensaje recibido!", newMessage);
-        queryClient.setQueryData(['messages', conversationId], (oldData: any) => {
-          if (!oldData || !oldData.getMessages) return oldData;
-          
-          return {
-            ...oldData,
-            getMessages: [...oldData.getMessages, newMessage] // Agregamos al final
-          };
-        });
-      },
-      error: (error:any) => console.warn("Error en suscripción:", error)
-    });
+    let subscription: any = null;
+    
+    const setupSubscription = async () => {
+      try {
+        // Verificar que tenemos token antes de suscribirnos
+        const token = await getToken();
+        if (!token) {
+          console.error("❌ No hay token disponible para la suscripción");
+          return;
+        }
 
-    // 3. Limpieza al salir de la pantalla
-    return () => sub.unsubscribe();
+        console.log("🔌 Iniciando suscripción para conversación:", conversationId);
+        console.log("🔑 Token (primeros 50 chars):", token.substring(0, 50));
+                
+        const client = generateClient();
+        
+        // Iniciar la suscripción
+        subscription = (client.graphql({
+          query: ON_NEW_MESSAGE,
+          variables: { conversationId },
+          authMode: 'userPool'
+        }) as any).subscribe({
+          next: ({ data }: any) => {
+            const newMessage = data.onNewMessage;
+            console.log("✅ ¡Nuevo mensaje recibido!", newMessage);
+            
+            // Actualizar la caché de React Query
+            queryClient.setQueryData(['messages', conversationId], (oldData: any) => {
+              if (!oldData) return [newMessage];
+              
+              // Evitar duplicados
+              const exists = oldData.some((msg: any) => msg.id === newMessage.id);
+              if (exists) return oldData;
+              
+              return [...oldData, newMessage];
+            });
+          },
+          error: (error: any) => {
+            console.error("❌ Error en suscripción:", error);
+            console.error("📋 Error completo:", JSON.stringify(error, null, 2));
+
+            
+            // Mostrar detalles del error
+            if (error.errors) {
+              error.errors.forEach((err: any, index: number) => {
+                console.error(`  Error ${index + 1}:`, err.message);
+                console.error(`  Detalles completos:`, JSON.stringify(err, null, 2));
+              });
+            }
+          }
+        });
+
+        console.log("✅ Suscripción iniciada correctamente");
+        
+      } catch (error) {
+        console.error("❌ Error al configurar suscripción:", error);
+      }
+    };
+
+    setupSubscription();
+
+    // Limpieza al desmontar
+    return () => {
+      if (subscription) {
+        console.log("🔌 Cerrando suscripción para:", conversationId);
+        subscription.unsubscribe();
+      }
+    };
   }, [conversationId, queryClient]);
 };
 

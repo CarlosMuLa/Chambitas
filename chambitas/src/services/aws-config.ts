@@ -39,7 +39,6 @@ export const configureAmplify = () => {
       GraphQL:{
         headers: async () => {
           const token = await getToken();
-          console.log("Token inyectado en WS:", token ? "SÍ (Token presente)" : "NO (Token vacío)");
           return { Authorization: token || '' };
         }
       }
