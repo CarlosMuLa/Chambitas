@@ -6,7 +6,6 @@ import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const client = generateClient();
 const API_URL = process.env.PUBLIC_EXPO_GRAPHQL_API_URL;
 
 // La definición de la suscripción GraphQL
@@ -111,14 +110,36 @@ export const useGetMessages = (conversationId: string) => {
   return useQuery({
     queryKey: ['messages', conversationId],
     queryFn: async () => {
-      // Usamos el mismo cliente de Amplify pero como Promesa (Query)
-      const response = await (client.graphql({
-        query: GET_MESSAGES,
-        variables: { conversationId }
-      }) as any); // 'as any' por el tema de tipos que vimos
+      const token = await getToken(); // Obtenemos token manual
+
+      if(!API_URL) {
+        throw new Error("API_URL no está definido");
+      }
+
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token || ''
+        },
+        body: JSON.stringify({
+          query: GET_MESSAGES,
+          variables: { conversationId }
+        })
+      });
+
+      const json = await response.json();
       
-      return response.data; // Devolvemos todo el objeto data
-    }
+      if (json.errors) {
+        console.error("Error GraphQL:", json.errors);
+        throw new Error(json.errors[0].message);
+      }
+
+      // Devuelve directamente response.data (que contiene getMessages)
+      return json.data.getMessages; 
+    },
+    // Opcional: Evita recargas constantes si te sales y entras del chat
+    staleTime: 1000 * 10, 
   });
 };
 
@@ -126,6 +147,7 @@ export const useChatSubscription = (conversationId: string) => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
+    const client = generateClient();
     // 1. Iniciar la suscripción con Amplify
     const sub = (client.graphql({
       query: ON_NEW_MESSAGE,

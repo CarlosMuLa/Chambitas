@@ -22,11 +22,10 @@ export default function ChatDetailScreen() {
 
     // 2. Lógica de carga y suscripción (Lo que tenías, pero ahora con ID real)
     const { data, isLoading } = useGetMessages(conversationId);
-    useChatSubscription(conversationId);
+    const hola = useChatSubscription(conversationId);
+    console.log("Suscripción iniciada para conversación:", hola);
 
     const sendMessageMutation = useSendMessage(conversationId, text, myUser);
-
-
 
     const handleSendMessage = async () => {
         if (text.trim() === "") return;
@@ -39,14 +38,15 @@ export default function ChatDetailScreen() {
     };
 
     // Auto-scroll al final
-    const messages = data?.getMessages || [];
+    const messages = data || [];
     useEffect(() => {
         if (messages.length) {
             setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
         }
     }, [messages.length]);
 
-    if (isLoading) return <Spinner size="large" color="$orange10" />;
+    // ELIMINADO: El return temprano que ocultaba el header
+    // if (isLoading) return <Spinner size="large" color="$orange10" />;
 
     return (
         <YStack flex={1} style={{backgroundColor: "white", padding: 16}} >
@@ -55,39 +55,67 @@ export default function ChatDetailScreen() {
                 {name || "Chat"}
             </Text>
 
-            {/* Área de Mensajes (Burbujas) */}
-            <ScrollView 
-                ref={scrollViewRef}
-                flex={1}
-                contentContainerStyle={{ paddingBlockEnd: 20 }}
-            >
-                <YStack space="$3">
-                    {messages.map((msg: any, i: number) => {
-                        const isMe = msg.sender === myUser;
-                        return (
-                            <XStack key={i} style={{ justifyContent: isMe ? 'flex-end' : 'flex-start' }}>
-                                <YStack
-                                    style={{
-                                    backgroundColor: isMe ? '$orange9' : '$gray4', padding: 8, borderRadius: 16, maxWidth: "80%" }}
-                                >
-                                    {!isMe && <Text fontSize={10} style={{ color: "$gray11" }}>{msg.sender}</Text>}
-                                    <Paragraph color={isMe ? 'white' : 'black'}>{msg.content}</Paragraph>
-                                </YStack>
-                            </XStack>
-                        );
-                    })}
+            {/* Área de Contenido (Carga, Vacío o Mensajes) */}
+            {isLoading ? (
+                <YStack  style={{flex: 1, justifyContent: "center", alignItems: "center"}}>
+                    <Spinner size="large" color="orange" />
+                    <Text style={{color: "gray", marginTop: 8}}>Cargando mensajes...</Text>
                 </YStack>
-            </ScrollView>
+            ) : messages.length === 0 ? (
+                <YStack style={{flex: 1, justifyContent: "center", alignItems: "center"}}>
+                    <Text style={{color: "gray", fontSize: 16}}>No hay mensajes aún.</Text>
+                    <Text style={{color: "gray", fontSize: 12}}>¡Sé el primero en escribir!</Text>
+                </YStack>
+            ) : (
+                <ScrollView 
+                    ref={scrollViewRef}
+                    flex={1}
+                    contentContainerStyle={{ flex: 1, paddingBlockEnd: 20 }}
+                >
+                    <YStack style={{ gap: 12, padding: 8 }}>
+                        {messages.map((msg: any, i: number) => {
+                            const isMe = msg.sender === myUser;
+                            return (
+                                <XStack 
+                                    key={i} 
+                                    style={{ justifyContent: isMe ? 'flex-end' : 'flex-start', paddingHorizontal: 4 }}
+                                >
+                                    <YStack
+                                    style={{
+                                        backgroundColor: isMe ? 'orange' : 'gray',
+                                        padding: 12,
+                                        borderRadius: 16,
+                                        // Estilo extra para dar forma de burbuja de chat
+                                        borderBottomRightRadius: isMe ? 0 : 16,
+                                        borderBottomLeftRadius: isMe ? 16 : 0,
+                                        maxWidth: "80%"}}
+                                    >
+                                        {!isMe && (
+                                            <Text  style={{fontSize: 10, color: "gray", marginBottom: 4}}>
+                                                {msg.sender}
+                                            </Text>
+                                        )}
+                                        <Paragraph color={isMe ? 'white' : 'black'}>
+                                            {msg.content}
+                                        </Paragraph>
+                                    </YStack>
+                                </XStack>
+                            );
+                        })}
+                    </YStack>
+                </ScrollView>
+            )}
 
             {/* Input para Escribir */}
-            <XStack borderTopWidth={1} style={{ borderColor: "$gray4", paddingTop: 8 }}>
+            <XStack borderTopWidth={1} style={{ borderColor: "gray", paddingTop: 8 }}>
                 <Input 
                     flex={1} 
                     value={text} 
                     onChangeText={setText} 
                     placeholder="Escribe un mensaje..." 
+                    style={{ backgroundColor: "gray", borderRadius: 20 , marginRight: 8}}
                 />
-                <Button onPress={handleSendMessage} style={{ backgroundColor: "$orange10", color: "white" }}>
+                <Button onPress={handleSendMessage} style = {{backgroundColor:"orange", color:"white"}}>
                     Enviar
                 </Button>
             </XStack>

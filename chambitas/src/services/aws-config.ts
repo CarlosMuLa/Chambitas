@@ -31,14 +31,19 @@ const amplifyConfig = {
 };
 
 export const configureAmplify = () => {
+
+  console.log("AAAAAAAAAAAAConfigurando Amplify con:");
+  console.log(amplifyConfig);
   Amplify.configure(amplifyConfig as any,{
     API: {
       GraphQL:{
         headers: async () => {
           const token = await getToken();
-          return { Authorization: token ? `Bearer ${token}` : '' };
+          console.log("Token inyectado en WS:", token ? "SÍ (Token presente)" : "NO (Token vacío)");
+          return { Authorization: token || '' };
         }
       }
     }
   });
+  console.log("Amplify configurado con:", amplifyConfig);
 }
