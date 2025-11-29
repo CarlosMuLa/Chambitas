@@ -120,12 +120,7 @@ const ProfileScreen = ({route}: {route: any}) => {
             />
             <Text style={styles.name}>{username}</Text>
             <Text style={styles.email}>{email}</Text>
-            
-            {!other && (
-                <TouchableOpacity style={styles.button}>
-                    <Text style={styles.buttonText}>Editar Perfil</Text>
-                </TouchableOpacity>
-            )}
+        
 
             {/* TABS DE TAMAGUI */}
             <YStack flex={1} width="100%">
