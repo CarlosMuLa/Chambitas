@@ -38,6 +38,7 @@ const CreateOffer = () => {
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState('');
     const [duration, setDuration] = useState(1);
+    const [loading, setLoading] = useState(false);
 
 
     
@@ -83,14 +84,17 @@ const CreateOffer = () => {
 
     const handleCreateOffer = async () => {
         // Validación simple
+        setLoading(true);
         if (images.length != 3) 
             {
                 alert("Por favor agrega 3 imágenes de tu trabajo.");
+                setLoading(false);
                 return;
             }
          if (!idToken) 
             {
                 alert("Error de sesión. Vuelve a iniciar sesión.");
+                setLoading(false);
                 return;
             }
         try 
@@ -120,9 +124,13 @@ const CreateOffer = () => {
             await createPostMutation.mutateAsync(newPost);
         } catch (error) {
             console.error("Error al crear la oferta:", error);
+            alert("Error al crear la oferta. Por favor, intenta de nuevo.");
+            setLoading(false);
         }
     } catch (error) {
         console.error("Error subiendo imágenes:", error);
+        alert("Error al subir las imágenes. Por favor, intenta de nuevo.");
+        setLoading(false);
     }
     };
     

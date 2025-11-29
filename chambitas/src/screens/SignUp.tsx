@@ -1,5 +1,5 @@
 import React, { useState} from 'react';
-import  {Platform} from 'react-native';
+import  {Platform, ToastAndroid, Alert} from 'react-native';
 import { YStack, Label, Input, Form, Avatar, Button, ScrollView, H2, Paragraph, Spinner, Switch, XStack} from 'tamagui';
 import * as ImagePicker from 'expo-image-picker';
 import { useMutation } from '@tanstack/react-query';
@@ -36,18 +36,20 @@ const SignUp = () => {
     const [isRegistering, setIsRegistering] = useState(false);
     const insets = useSafeAreaInsets();
     
-
-
     const navigation = useNavigation();
+
+    // Función auxiliar para mostrar mensajes nativos (Toast en Android, Alert en iOS)
     
     const signUpMutation = useMutation({
         mutationFn: authService.signUp,
         onSuccess: (data) => {
+            setIsRegistering(false); // Aseguramos apagar el estado al terminar
             navigation.navigate('ConfirmationCode', { username, password });
         },
         onError: (error) => {
+            setIsRegistering(false); // Importante: apagar el estado si falla
             console.error("Error al registrarse:", error);
-            alert("Error al registrarse. Por favor, intenta de nuevo.");
+            alert( "Error al registrarse. Por favor, intenta de nuevo.");
         }
     });
 
@@ -56,7 +58,7 @@ const SignUp = () => {
         {
             const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
             if (status !== 'granted') {
-                alert('Se requieren permisos para acceder a las fotos.');
+                alert( "Se requieren permisos para acceder a las fotos.");
                 return;
             }
         }
@@ -72,16 +74,17 @@ const SignUp = () => {
 };
 
 const handleSignUp =  async () => {
-    if(!email || !password || !cellphone || !username || !confirmPassword || !address || !city) {
-        alert('Por favor, completa todos los campos.');
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+    if(!email || !password || !cellphone || !username || !confirmPassword || !address || !city || !type || !imageUri) {
+        alert( "Por favor, completa todos los campos.");
         return;
     }
-    if (!imageUri){
-        alert('Por favor, selecciona una foto de perfil.');
+    if (!passwordRegex.test(password)) {
+        alert("La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial.");
         return;
     }
     if (password !== confirmPassword) {
-        alert('Las contraseñas no coinciden.');
+        alert("Las contraseñas no coinciden.");
         return false;
     }
     let photoUrl = "";
@@ -95,7 +98,7 @@ const handleSignUp =  async () => {
                 console.log("Foto subida:", photoUrl);
         } catch (error) {
             console.error("Error al subir la foto:", error);
-            alert("Error al subir la foto. Por favor, intenta de nuevo.");
+            alert( "Error al subir la foto. Por favor, intenta de nuevo.");
             setIsRegistering(false);
             return;
         }
@@ -197,14 +200,14 @@ const handleSignUp =  async () => {
                     </XStack>
                 </YStack>
 
-                <Form.Trigger asChild disabled={signUpMutation.isPending}>
+                <Form.Trigger asChild disabled={signUpMutation.isPending || isRegistering}>
                     <Button 
                         style={{ marginTop: 20 , 
                         backgroundColor:"#FA812F",
                         color:"white"}}
-                        icon={signUpMutation.isPending ?  <Spinner /> : undefined}
+                        icon={(signUpMutation.isPending || isRegistering) ?  <Spinner color="white" /> : undefined}
                     >
-                        {signUpMutation.isPending ? 'Creando cuenta...' : 'Registrarse'}
+                        {(signUpMutation.isPending || isRegistering) ? 'Creando cuenta...' : 'Registrarse'}
                     </Button>
                 </Form.Trigger>
             </Form>

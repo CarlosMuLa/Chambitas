@@ -28,11 +28,25 @@ interface GetPostsArgs {
 
 interface Order 
 {
-    offer_id: string;
+    offer_id?: string;
     cognito_sub?: string;
     startTime?: string;
     price?: number;
     timeUnit?: string;
+}
+
+interface Review {
+    order_id: string;
+    cognito_sub_client: string;
+    cognito_sub_provider: string;
+    rating: number;
+    title_service: string;
+    comment?: string;
+}
+
+interface GetReviewsArgs {
+    cognito_sub_provider?: string;
+    offer_id?: string;
 }
 
 
@@ -137,3 +151,51 @@ export const useGetOrdersById = (args: Order) => {
         refetchOnWindowFocus: false,
     });
 }
+
+export const useSubmitReview = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (newReview: Review) => {
+            const response = await fetch('https://k1b6y3wq9f.execute-api.us-east-2.amazonaws.com/createReview', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newReview),
+            });
+            if (!response.ok) {
+                throw new Error('Failed to submit review');
+            }
+            return response.json();
+        },
+        onSuccess: () => {
+            console.log("Review submitted successfully");
+            queryClient.invalidateQueries({ queryKey: ['orders'] });
+        }
+    });
+};
+
+
+export const getReviewsByOfferId = async (args: GetReviewsArgs) =>{
+    const { offer_id } = args;
+    const queryParams = new URLSearchParams();
+    
+    if (offer_id) queryParams.append('offer_id', offer_id.toString());
+    const response = await fetch(`https://k1b6y3wq9f.execute-api.us-east-2.amazonaws.com/getReviews?${queryParams.toString()}`, {
+        method: 'GET',
+    });
+    if (!response.ok) {
+        throw new Error('Failed to fetch orders');
+    }
+    return response.json();
+};
+
+export const useGetReviewsByOfferId = (args: GetReviewsArgs) => {
+    return useQuery({
+        queryKey: ['reviewsRating', args],
+        queryFn: () => getReviewsByOfferId(args),
+        staleTime: 5 * 60 * 1000, // 5 minutos
+        gcTime: 10 * 60 * 1000, // 10 minutos
+        refetchOnWindowFocus: false,
+    });
+};

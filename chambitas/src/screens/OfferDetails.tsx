@@ -1,9 +1,9 @@
 import { H1, Text, Button, Paragraph, Image, Card, YStack, XStack, Spinner } from 'tamagui';
-import { ChevronLeft, ChevronRight } from '@tamagui/lucide-icons'; // 1. Importamos los iconos
+import { ChevronLeft, ChevronRight, Star } from '@tamagui/lucide-icons'; // 1. Importamos los iconos
 import React, { useState, useRef } from 'react'; // 2. Importamos useRef
 import { useNavigation } from '@react-navigation/native';
 import { RootStackScreenProps } from '../navigation/types';
-import { usePosts } from '../api/postsService';
+import { usePosts, useGetReviewsByOfferId } from '../api/postsService';
 import { Dimensions, ScrollView, NativeSyntheticEvent, NativeScrollEvent, useWindowDimensions } from 'react-native';
 import { useCurrentUser } from '../hooks/currentUser';
 
@@ -15,6 +15,10 @@ const OfferDetails = ({ route }: { route: any }) => {
     const user = useCurrentUser();
     const { id } = route.params;
     const { data: post, isLoading } = usePosts({ id });
+    const { data: reviews } = useGetReviewsByOfferId({ offer_id: id });
+
+    const avgRating = reviews?.avg_rating ? parseFloat(reviews.avg_rating) : 0;
+    console.log("REVIEWS RECIBIDAS:", JSON.stringify(avgRating, null, 2));
     
     const [activeIndex, setActiveIndex] = useState(0);
     const scrollViewRef = useRef<ScrollView>(null); // 3. Referencia al ScrollView
@@ -145,6 +149,22 @@ const OfferDetails = ({ route }: { route: any }) => {
 
             <YStack style={{ padding: 16 }} gap="$3">
                 <H1>{title}</H1>
+                <XStack style = {{alignItems: "center", gap: "$2"}}>
+                    <XStack gap="$1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                            <Star 
+                                key={star} 
+                                size={30} 
+                                // Rellenamos si el promedio es mayor o igual a la estrella actual
+                                fill={star <= Math.round(avgRating) ? "#FFD700" : "transparent"} 
+                                color={star <= Math.round(avgRating) ? "#FFD700" : "gray"} 
+                            />
+                        ))}
+                    </XStack>
+                    <Paragraph size="$3" color="gray" fontWeight="bold">
+                        {avgRating > 0 ? avgRating.toFixed(1) : "Sin calificaciones"}
+                    </Paragraph>
+                </XStack>
                 <XStack gap="$3" style={{ alignItems: "center" , flexWrap: "wrap", paddingEnd: 100}}>
                     <Paragraph style={{ color: "$gray10", fontSize: 20 }} >📍 {city_name}</Paragraph>
                     <Paragraph style={{ color: "$gray10", fontSize: 20 }}>🏷️ {category_name}</Paragraph>
